@@ -6,16 +6,8 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle, XCircle, ScanLine, RotateCcw, History, Settings } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { AudioFeedback } from '@/utils/audioFeedback';
-
-type ValidationState = 'waiting' | 'approved' | 'rejected' | 'error';
-
-interface ValidationResult {
-  serial1: string;
-  serial2: string;
-  state: ValidationState;
-  message: string;
-  timestamp: Date;
-}
+import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
+import ConfigurationModal from '@/components/ConfigurationModal';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -23,9 +15,16 @@ const ValidationSystem = () => {
   const [validationState, setValidationState] = useState<ValidationState>('waiting');
   const [message, setMessage] = useState('Aguardando primeira leitura...');
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
-  const [autoResetTime, setAutoResetTime] = useState(3); // Tempo em segundos para auto-reset
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  
+  // Configuration state
+  const [config, setConfig] = useState<ValidationConfig>({
+    autoResetTime: 3,
+    soundEnabled: true,
+    stationId: '',
+    lineId: ''
+  });
   
   const serial1Ref = useRef<HTMLInputElement>(null);
   const serial2Ref = useRef<HTMLInputElement>(null);
@@ -62,7 +61,7 @@ const ValidationSystem = () => {
     if (!validateFormat(norm1) || !validateFormat(norm2)) {
       setValidationState('error');
       setMessage('Formato inválido detectado');
-      if (soundEnabled) AudioFeedback.playWarning();
+      if (config.soundEnabled) AudioFeedback.playWarning();
       return;
     }
     
@@ -81,7 +80,7 @@ const ValidationSystem = () => {
     setValidationHistory(prev => [result, ...prev.slice(0, 99)]); // Keep last 100 records
     
     // Audio feedback
-    if (soundEnabled) {
+    if (config.soundEnabled) {
       if (result.state === 'approved') {
         AudioFeedback.playSuccess();
       } else {
@@ -92,7 +91,7 @@ const ValidationSystem = () => {
     // Auto-reset após tempo configurável
     setTimeout(() => {
       resetValidation();
-    }, autoResetTime * 1000);
+    }, config.autoResetTime * 1000);
   };
 
   // Reset do sistema
@@ -149,7 +148,7 @@ const ValidationSystem = () => {
   useKeyboardShortcuts({
     onClear: resetValidation,
     onHistory: () => console.log('Histórico - implementar modal/página'),
-    onConfig: () => console.log('Configurações - implementar modal')
+    onConfig: () => setShowConfigModal(true)
   });
 
   // Classes para estados visuais
@@ -250,45 +249,6 @@ const ValidationSystem = () => {
           </Card>
         </div>
 
-        {/* Time Control */}
-        <Card className="p-6">
-          <div className="flex flex-col items-center space-y-4">
-            <Label className="text-lg font-semibold">Tempo de Auto-Reset</Label>
-            <div className="flex items-center space-x-4 w-full max-w-md">
-              <span className="text-sm text-muted-foreground">1s</span>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                step="0.5"
-                value={autoResetTime}
-                onChange={(e) => setAutoResetTime(Number(e.target.value))}
-                className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-              />
-              <span className="text-sm text-muted-foreground">10s</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-2xl font-bold text-primary">{autoResetTime}s</span>
-              <div className="flex space-x-2">
-                {[1, 2, 3, 5, 8].map((time) => (
-                  <Button
-                    key={time}
-                    onClick={() => setAutoResetTime(time)}
-                    size="sm"
-                    variant={autoResetTime === time ? "default" : "outline"}
-                    className="px-3 py-1"
-                  >
-                    {time}s
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              Tempo para limpeza automática após resultado da validação
-            </p>
-          </div>
-        </Card>
-
         {/* Controls */}
         <div className="flex justify-center space-x-4">
           <Button
@@ -312,14 +272,23 @@ const ValidationSystem = () => {
           </Button>
           
           <Button
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={() => setShowConfigModal(true)}
             size="lg"
-            variant={soundEnabled ? "default" : "outline"}
+            variant="outline"
             className="text-lg px-8 py-4"
           >
-            🔊 Som {soundEnabled ? 'Ligado' : 'Desligado'}
+            <Settings className="w-5 h-5 mr-2" />
+            Configurações (Ctrl+.)
           </Button>
         </div>
+
+        {/* Configuration Modal */}
+        <ConfigurationModal
+          isOpen={showConfigModal}
+          onClose={() => setShowConfigModal(false)}
+          config={config}
+          onConfigChange={setConfig}
+        />
 
         {/* Stats */}
         {validationHistory.length > 0 && (
