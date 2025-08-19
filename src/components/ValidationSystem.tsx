@@ -25,6 +25,7 @@ const ValidationSystem = () => {
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
+  const [autoResetTime, setAutoResetTime] = useState(3); // Tempo em segundos para auto-reset
   
   const serial1Ref = useRef<HTMLInputElement>(null);
   const serial2Ref = useRef<HTMLInputElement>(null);
@@ -88,10 +89,10 @@ const ValidationSystem = () => {
       }
     }
     
-    // Auto-reset após 3 segundos
+    // Auto-reset após tempo configurável
     setTimeout(() => {
       resetValidation();
-    }, 3000);
+    }, autoResetTime * 1000);
   };
 
   // Reset do sistema
@@ -248,6 +249,45 @@ const ValidationSystem = () => {
             />
           </Card>
         </div>
+
+        {/* Time Control */}
+        <Card className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <Label className="text-lg font-semibold">Tempo de Auto-Reset</Label>
+            <div className="flex items-center space-x-4 w-full max-w-md">
+              <span className="text-sm text-muted-foreground">1s</span>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="0.5"
+                value={autoResetTime}
+                onChange={(e) => setAutoResetTime(Number(e.target.value))}
+                className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+              />
+              <span className="text-sm text-muted-foreground">10s</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-2xl font-bold text-primary">{autoResetTime}s</span>
+              <div className="flex space-x-2">
+                {[1, 2, 3, 5, 8].map((time) => (
+                  <Button
+                    key={time}
+                    onClick={() => setAutoResetTime(time)}
+                    size="sm"
+                    variant={autoResetTime === time ? "default" : "outline"}
+                    className="px-3 py-1"
+                  >
+                    {time}s
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Tempo para limpeza automática após resultado da validação
+            </p>
+          </div>
+        </Card>
 
         {/* Controls */}
         <div className="flex justify-center space-x-4">
