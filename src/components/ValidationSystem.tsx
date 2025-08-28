@@ -101,7 +101,8 @@ const ValidationSystem = () => {
     setIsSerial1Complete(false);
     setValidationState('waiting');
     setMessage('Aguardando primeira leitura...');
-    serial1Ref.current?.focus();
+    // Only focus if user clicked the reset button
+    setTimeout(() => serial1Ref.current?.focus(), 100);
   };
 
   // Handler para primeira entrada
@@ -139,10 +140,14 @@ const ValidationSystem = () => {
     }
   };
 
-  // Foco automático no primeiro campo ao carregar
-  useEffect(() => {
-    serial1Ref.current?.focus();
-  }, []);
+  // Focus only when user clicks on the validation area
+  const handleValidationAreaClick = () => {
+    if (!isSerial1Complete) {
+      serial1Ref.current?.focus();
+    } else {
+      serial2Ref.current?.focus();
+    }
+  };
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -180,7 +185,7 @@ const ValidationSystem = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8" onClick={handleValidationAreaClick}>
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground">
