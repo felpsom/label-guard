@@ -8,6 +8,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { AudioFeedback } from '@/utils/audioFeedback';
 import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
 import ConfigurationModal from '@/components/ConfigurationModal';
+import HistoryModal from '@/components/HistoryModal';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -17,6 +18,8 @@ const ValidationSystem = () => {
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [scannerInput, setScannerInput] = useState('');
   
   // Configuration state
   const [config, setConfig] = useState<ValidationConfig>({
@@ -26,8 +29,7 @@ const ValidationSystem = () => {
     lineId: ''
   });
   
-  const serial1Ref = useRef<HTMLInputElement>(null);
-  const serial2Ref = useRef<HTMLInputElement>(null);
+  const scannerRef = useRef<HTMLInputElement>(null);
 
   // Normaliza o código removendo prefixos e caracteres especiais
   const normalizeSerial = (input: string): string => {
@@ -98,61 +100,81 @@ const ValidationSystem = () => {
   const resetValidation = () => {
     setSerial1('');
     setSerial2('');
+    setScannerInput('');
     setIsSerial1Complete(false);
     setValidationState('waiting');
     setMessage('Aguardando primeira leitura...');
-    // Only focus if user clicked the reset button
-    setTimeout(() => serial1Ref.current?.focus(), 100);
+    // Focus scanner for automatic reading
+    setTimeout(() => scannerRef.current?.focus(), 100);
   };
 
-  // Handler para primeira entrada
-  const handleSerial1Change = (value: string) => {
-    setSerial1(value);
+  // Limpa o histórico de validações
+  const clearHistory = () => {
+    setValidationHistory([]);
+    setShowHistoryModal(false);
+  };
+
+  // Handler para o scanner automático
+  const handleScannerInput = (value: string) => {
+    setScannerInput(value);
+    
+    // Detecta entrada completa (Enter ou código longo o suficiente)
     if (value.length >= 8) {
       const normalized = normalizeSerial(value);
-      if (validateFormat(normalized)) {
+      
+      if (!validateFormat(normalized)) {
+        setValidationState('error');
+        setMessage('Formato do código inválido');
+        if (config.soundEnabled) AudioFeedback.playWarning();
+        setTimeout(() => {
+          setScannerInput('');
+          scannerRef.current?.focus();
+        }, 1000);
+        return;
+      }
+
+      if (!isSerial1Complete) {
+        // Primeiro código
+        setSerial1(value);
         setIsSerial1Complete(true);
         setMessage('Aguardando segunda leitura...');
-        serial2Ref.current?.focus();
+        setScannerInput('');
+        scannerRef.current?.focus();
       } else {
-        setValidationState('error');
-        setMessage('Formato do primeiro código inválido');
+        // Segundo código - comparar
+        setSerial2(value);
+        compareSerials(serial1, value);
+        setScannerInput('');
       }
     }
   };
 
-  // Handler para segunda entrada
-  const handleSerial2Change = (value: string) => {
-    setSerial2(value);
-    if (value.length >= 8 && isSerial1Complete) {
-      compareSerials(serial1, value);
+  // Handler para Enter no scanner
+  const handleScannerKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && scannerInput.length >= 8) {
+      handleScannerInput(scannerInput);
     }
   };
 
-  // Handler para Enter key
-  const handleKeyPress = (e: React.KeyboardEvent, field: 'serial1' | 'serial2') => {
-    if (e.key === 'Enter') {
-      if (field === 'serial1' && serial1.length >= 8) {
-        handleSerial1Change(serial1);
-      } else if (field === 'serial2' && serial2.length >= 8) {
-        handleSerial2Change(serial2);
-      }
-    }
-  };
-
-  // Focus only when user clicks on the validation area
+  // Focus scanner quando clicar na área de validação
   const handleValidationAreaClick = () => {
-    if (!isSerial1Complete) {
-      serial1Ref.current?.focus();
-    } else {
-      serial2Ref.current?.focus();
-    }
+    scannerRef.current?.focus();
   };
+
+  // Auto-focus no scanner ao carregar (apenas se não estiver em modal/chat)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        scannerRef.current?.focus();
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onClear: resetValidation,
-    onHistory: () => console.log('Histórico - implementar modal/página'),
+    onHistory: () => setShowHistoryModal(true),
     onConfig: () => setShowConfigModal(true)
   });
 
@@ -160,47 +182,47 @@ const ValidationSystem = () => {
   const getStateClasses = () => {
     switch (validationState) {
       case 'approved':
-        return 'bg-gradient-success shadow-success border-success';
+        return 'bg-success/10 shadow-success border-success/30';
       case 'rejected':
-        return 'bg-gradient-error shadow-error border-error';
+        return 'bg-error/10 shadow-error border-error/30';
       case 'error':
-        return 'bg-warning/10 shadow-lg border-warning';
+        return 'bg-warning/10 border-warning/30';
       default:
-        return 'bg-gradient-subtle shadow-industrial border-primary/20';
+        return 'bg-white/60 shadow-industrial border-primary/20';
     }
   };
 
   const getIcon = () => {
     switch (validationState) {
       case 'approved':
-        return <CheckCircle className="w-16 h-16 text-success-foreground" />;
+        return <CheckCircle className="w-8 h-8 text-success" />;
       case 'rejected':
-        return <XCircle className="w-16 h-16 text-error-foreground" />;
+        return <XCircle className="w-8 h-8 text-error" />;
       case 'error':
-        return <ScanLine className="w-16 h-16 text-warning-foreground" />;
+        return <ScanLine className="w-8 h-8 text-warning" />;
       default:
-        return <ScanLine className="w-16 h-16 text-primary animate-pulse" />;
+        return <ScanLine className="w-8 h-8 text-primary animate-pulse" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle p-6">
-      <div className="max-w-4xl mx-auto space-y-8" onClick={handleValidationAreaClick}>
+    <div className="min-h-screen bg-gradient-subtle p-4">
+      <div className="max-w-5xl mx-auto space-y-6" onClick={handleValidationAreaClick}>
         {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-foreground">
-            Sistema de Validação de Etiquetas
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-light text-foreground">
+            Validação de Etiquetas
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Escaneie ou digite os dois códigos para validação
+          <p className="text-muted-foreground">
+            Scanner automático para verificação de códigos
           </p>
         </div>
 
         {/* Status Card */}
-        <Card className={`p-8 transition-all duration-500 ${getStateClasses()}`}>
-          <div className="flex flex-col items-center space-y-6">
+        <Card className={`p-6 transition-all duration-500 ${getStateClasses()}`}>
+          <div className="flex items-center justify-center space-x-4">
             {getIcon()}
-            <h2 className={`text-3xl font-bold text-center ${
+            <h2 className={`text-2xl font-medium ${
               validationState === 'approved' ? 'text-success-foreground' : 
               validationState === 'rejected' ? 'text-error-foreground' :
               validationState === 'error' ? 'text-warning-foreground' :
@@ -211,79 +233,69 @@ const ValidationSystem = () => {
           </div>
         </Card>
 
-        {/* Input Fields */}
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card className="p-6 space-y-4">
-            <Label htmlFor="serial1" className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className="w-5 h-5" />
-              Código 1
-            </Label>
-            <Input
-              id="serial1"
-              ref={serial1Ref}
-              value={serial1}
-              onChange={(e) => handleSerial1Change(e.target.value)}
-              onKeyPress={(e) => handleKeyPress(e, 'serial1')}
-              placeholder="Escaneie ou digite o primeiro código"
-              className="text-2xl p-6 text-center font-mono tracking-wider"
-              disabled={isSerial1Complete && validationState !== 'waiting'}
-            />
+        {/* Scanner Input */}
+        <Card className="p-4">
+          <Input
+            id="scanner"
+            ref={scannerRef}
+            value={scannerInput}
+            onChange={(e) => handleScannerInput(e.target.value)}
+            onKeyPress={handleScannerKeyPress}
+            placeholder="Escaneie ou digite os códigos aqui"
+            className="text-xl p-4 text-center font-mono bg-primary/5 border-primary/20 focus:border-primary"
+          />
+        </Card>
+
+        {/* Display Fields */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card className="p-4">
+            <Label className="text-sm font-medium text-muted-foreground mb-2 block">Código 1</Label>
+            <div className="text-lg p-3 text-center font-mono bg-muted/30 rounded min-h-[3rem] flex items-center justify-center">
+              {serial1 || '—'}
+            </div>
             {isSerial1Complete && (
-              <div className="flex items-center justify-center text-success">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                <span className="font-medium">Código 1 registrado</span>
+              <div className="flex items-center justify-center text-success mt-2 text-sm">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Registrado
               </div>
             )}
           </Card>
 
-          <Card className="p-6 space-y-4">
-            <Label htmlFor="serial2" className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className="w-5 h-5" />
-              Código 2
-            </Label>
-            <Input
-              id="serial2"
-              ref={serial2Ref}
-              value={serial2}
-              onChange={(e) => handleSerial2Change(e.target.value)}
-              onKeyPress={(e) => handleKeyPress(e, 'serial2')}
-              placeholder="Escaneie ou digite o segundo código"
-              className="text-2xl p-6 text-center font-mono tracking-wider"
-              disabled={!isSerial1Complete || (validationState !== 'waiting' && validationState !== 'error')}
-            />
+          <Card className="p-4">
+            <Label className="text-sm font-medium text-muted-foreground mb-2 block">Código 2</Label>
+            <div className="text-lg p-3 text-center font-mono bg-muted/30 rounded min-h-[3rem] flex items-center justify-center">
+              {serial2 || '—'}
+            </div>
           </Card>
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center gap-3">
           <Button
             onClick={resetValidation}
-            size="lg"
             variant="outline"
-            className="text-lg px-8 py-4"
+            size="sm"
           >
-            <RotateCcw className="w-5 h-5 mr-2" />
-            Limpar (F9)
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Limpar
           </Button>
           
           <Button
-            onClick={() => console.log('Histórico')}
-            size="lg"
+            onClick={() => setShowHistoryModal(true)}
             variant="outline"
-            className="text-lg px-8 py-4"
+            size="sm"
           >
-            <History className="w-5 h-5 mr-2" />
-            Histórico (F6)
+            <History className="w-4 h-4 mr-2" />
+            Histórico
           </Button>
           
           <Button
             onClick={() => setShowConfigModal(true)}
-            size="lg"
             variant="outline"
-            className="text-lg px-8 py-4"
+            size="sm"
           >
-            <Settings className="w-5 h-5 mr-2" />
-            Configurações (Ctrl+.)
+            <Settings className="w-4 h-4 mr-2" />
+            Config
           </Button>
         </div>
 
@@ -295,48 +307,37 @@ const ValidationSystem = () => {
           onConfigChange={setConfig}
         />
 
+        {/* History Modal */}
+        <HistoryModal
+          isOpen={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          history={validationHistory}
+          onClearHistory={clearHistory}
+        />
+
         {/* Stats */}
         {validationHistory.length > 0 && (
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4 text-center">Estatísticas da Sessão</h3>
-            <div className="grid md:grid-cols-3 gap-4 text-center">
+          <Card className="p-4">
+            <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-primary">{validationHistory.length}</div>
-                <div className="text-sm text-muted-foreground">Total de Validações</div>
+                <div className="text-xl font-semibold text-primary">{validationHistory.length}</div>
+                <div className="text-xs text-muted-foreground">Total</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-success">
+                <div className="text-xl font-semibold text-success">
                   {validationHistory.filter(v => v.state === 'approved').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Aprovados</div>
+                <div className="text-xs text-muted-foreground">Aprovados</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-error">
+                <div className="text-xl font-semibold text-error">
                   {validationHistory.filter(v => v.state === 'rejected').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Reprovados</div>
+                <div className="text-xs text-muted-foreground">Reprovados</div>
               </div>
             </div>
           </Card>
         )}
-
-        {/* Quick Info */}
-        <Card className="p-6 bg-muted/50">
-          <div className="grid md:grid-cols-3 gap-4 text-center">
-            <div>
-              <h3 className="font-semibold text-success">APROVADO</h3>
-              <p className="text-sm text-muted-foreground">Códigos idênticos</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-error">REPROVADO</h3>
-              <p className="text-sm text-muted-foreground">Códigos diferentes</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-warning">ERRO</h3>
-              <p className="text-sm text-muted-foreground">Formato inválido</p>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   );
