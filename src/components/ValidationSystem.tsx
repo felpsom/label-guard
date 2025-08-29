@@ -17,7 +17,7 @@ const ValidationSystem = () => {
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [currentInput, setCurrentInput] = useState('');
+  const [scannerInput, setScannerInput] = useState('');
   
   // Configuration state
   const [config, setConfig] = useState<ValidationConfig>({
@@ -27,7 +27,7 @@ const ValidationSystem = () => {
     lineId: ''
   });
   
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const scannerRef = useRef<HTMLInputElement>(null);
 
   // Normaliza o código removendo prefixos e caracteres especiais
   const normalizeSerial = (input: string): string => {
@@ -98,59 +98,69 @@ const ValidationSystem = () => {
   const resetValidation = () => {
     setSerial1('');
     setSerial2('');
-    setCurrentInput('');
+    setScannerInput('');
     setIsSerial1Complete(false);
     setValidationState('waiting');
     setMessage('Aguardando primeira leitura...');
-    hiddenInputRef.current?.focus();
+    // Focus scanner for automatic reading
+    setTimeout(() => scannerRef.current?.focus(), 100);
   };
 
-  // Handler para leitura automática
-  const handleScanInput = (value: string) => {
-    // Se ainda não há primeira leitura
-    if (!isSerial1Complete) {
+  // Handler para o scanner automático
+  const handleScannerInput = (value: string) => {
+    setScannerInput(value);
+    
+    // Detecta entrada completa (Enter ou código longo o suficiente)
+    if (value.length >= 8) {
       const normalized = normalizeSerial(value);
-      if (validateFormat(normalized)) {
+      
+      if (!validateFormat(normalized)) {
+        setValidationState('error');
+        setMessage('Formato do código inválido');
+        if (config.soundEnabled) AudioFeedback.playWarning();
+        setTimeout(() => {
+          setScannerInput('');
+          scannerRef.current?.focus();
+        }, 1000);
+        return;
+      }
+
+      if (!isSerial1Complete) {
+        // Primeiro código
         setSerial1(value);
         setIsSerial1Complete(true);
         setMessage('Aguardando segunda leitura...');
-        setCurrentInput('');
-        hiddenInputRef.current?.focus();
+        setScannerInput('');
+        scannerRef.current?.focus();
       } else {
-        setValidationState('error');
-        setMessage('Formato do primeiro código inválido');
-        setCurrentInput('');
-        setTimeout(() => {
-          resetValidation();
-        }, 2000);
+        // Segundo código - comparar
+        setSerial2(value);
+        compareSerials(serial1, value);
+        setScannerInput('');
       }
-    } else {
-      // Segunda leitura
-      setSerial2(value);
-      compareSerials(serial1, value);
-      setCurrentInput('');
     }
   };
 
-  // Handler para Enter key no input oculto
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && currentInput.trim()) {
-      handleScanInput(currentInput.trim());
+  // Handler para Enter no scanner
+  const handleScannerKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && scannerInput.length >= 8) {
+      handleScannerInput(scannerInput);
     }
   };
 
-  // Foco automático no input oculto ao carregar e manter sempre focado
+  // Focus scanner quando clicar na área de validação
+  const handleValidationAreaClick = () => {
+    scannerRef.current?.focus();
+  };
+
+  // Auto-focus no scanner ao carregar (apenas se não estiver em modal/chat)
   useEffect(() => {
-    hiddenInputRef.current?.focus();
-    
-    const handleFocus = () => {
-      if (hiddenInputRef.current && document.activeElement !== hiddenInputRef.current) {
-        hiddenInputRef.current.focus();
+    const timer = setTimeout(() => {
+      if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        scannerRef.current?.focus();
       }
-    };
-
-    const interval = setInterval(handleFocus, 100);
-    return () => clearInterval(interval);
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   // Keyboard shortcuts
@@ -189,7 +199,7 @@ const ValidationSystem = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8" onClick={handleValidationAreaClick}>
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground">
@@ -215,30 +225,35 @@ const ValidationSystem = () => {
           </div>
         </Card>
 
-        {/* Input oculto para capturar leituras */}
-        <Input
-          ref={hiddenInputRef}
-          value={currentInput}
-          onChange={(e) => setCurrentInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="absolute opacity-0 pointer-events-none -z-10"
-          autoComplete="off"
-        />
+        {/* Scanner Input - Hidden field for automatic scanning */}
+        <Card className="p-6 space-y-4">
+          <Label htmlFor="scanner" className="text-xl font-semibold flex items-center gap-2">
+            <ScanLine className="w-5 h-5" />
+            Scanner Automático
+          </Label>
+          <Input
+            id="scanner"
+            ref={scannerRef}
+            value={scannerInput}
+            onChange={(e) => handleScannerInput(e.target.value)}
+            onKeyPress={handleScannerKeyPress}
+            placeholder="Posicione o cursor aqui e escaneie os códigos sequencialmente"
+            className="text-2xl p-6 text-center font-mono tracking-wider bg-primary/5 border-primary/30"
+          />
+          <p className="text-sm text-muted-foreground text-center">
+            Escaneie o primeiro código, depois o segundo. O sistema processará automaticamente.
+          </p>
+        </Card>
 
-        {/* Display de códigos lidos */}
+        {/* Display Fields - Read Only */}
         <div className="grid md:grid-cols-2 gap-8">
-          <Card className={`p-6 space-y-4 transition-all duration-300 ${
-            !isSerial1Complete ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
-          }`}>
+          <Card className="p-6 space-y-4">
             <Label className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-5 h-5 ${!isSerial1Complete ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+              <ScanLine className="w-5 h-5" />
               Código 1
-              {!isSerial1Complete && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-2xl p-6 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[80px] flex items-center justify-center ${
-              serial1 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
-            }`}>
-              {serial1 || 'Nenhum código lido'}
+            <div className="text-2xl p-6 text-center font-mono tracking-wider bg-muted/50 border border-border rounded-md min-h-[4rem] flex items-center justify-center">
+              {serial1 || 'Aguardando...'}
             </div>
             {isSerial1Complete && (
               <div className="flex items-center justify-center text-success">
@@ -248,18 +263,13 @@ const ValidationSystem = () => {
             )}
           </Card>
 
-          <Card className={`p-6 space-y-4 transition-all duration-300 ${
-            isSerial1Complete && !serial2 ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
-          }`}>
+          <Card className="p-6 space-y-4">
             <Label className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-5 h-5 ${isSerial1Complete && !serial2 ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+              <ScanLine className="w-5 h-5" />
               Código 2
-              {isSerial1Complete && !serial2 && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-2xl p-6 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[80px] flex items-center justify-center ${
-              serial2 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
-            }`}>
-              {serial2 || 'Nenhum código lido'}
+            <div className="text-2xl p-6 text-center font-mono tracking-wider bg-muted/50 border border-border rounded-md min-h-[4rem] flex items-center justify-center">
+              {serial2 || (isSerial1Complete ? 'Aguardando...' : '')}
             </div>
           </Card>
         </div>
