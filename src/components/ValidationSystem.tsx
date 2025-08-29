@@ -17,7 +17,6 @@ const ValidationSystem = () => {
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [currentInput, setCurrentInput] = useState('');
   
   // Configuration state
   const [config, setConfig] = useState<ValidationConfig>({
@@ -27,7 +26,8 @@ const ValidationSystem = () => {
     lineId: ''
   });
   
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const serial1Ref = useRef<HTMLInputElement>(null);
+  const serial2Ref = useRef<HTMLInputElement>(null);
 
   // Normaliza o código removendo prefixos e caracteres especiais
   const normalizeSerial = (input: string): string => {
@@ -98,60 +98,56 @@ const ValidationSystem = () => {
   const resetValidation = () => {
     setSerial1('');
     setSerial2('');
-    setCurrentInput('');
     setIsSerial1Complete(false);
     setValidationState('waiting');
     setMessage('Aguardando primeira leitura...');
-    hiddenInputRef.current?.focus();
+    // Only focus if user clicked the reset button
+    setTimeout(() => serial1Ref.current?.focus(), 100);
   };
 
-  // Handler para leitura automática
-  const handleScanInput = (value: string) => {
-    // Se ainda não há primeira leitura
-    if (!isSerial1Complete) {
+  // Handler para primeira entrada
+  const handleSerial1Change = (value: string) => {
+    setSerial1(value);
+    if (value.length >= 8) {
       const normalized = normalizeSerial(value);
       if (validateFormat(normalized)) {
-        setSerial1(value);
         setIsSerial1Complete(true);
         setMessage('Aguardando segunda leitura...');
-        setCurrentInput('');
-        hiddenInputRef.current?.focus();
+        serial2Ref.current?.focus();
       } else {
         setValidationState('error');
         setMessage('Formato do primeiro código inválido');
-        setCurrentInput('');
-        setTimeout(() => {
-          resetValidation();
-        }, 2000);
       }
-    } else {
-      // Segunda leitura
-      setSerial2(value);
+    }
+  };
+
+  // Handler para segunda entrada
+  const handleSerial2Change = (value: string) => {
+    setSerial2(value);
+    if (value.length >= 8 && isSerial1Complete) {
       compareSerials(serial1, value);
-      setCurrentInput('');
     }
   };
 
-  // Handler para Enter key no input oculto
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && currentInput.trim()) {
-      handleScanInput(currentInput.trim());
-    }
-  };
-
-  // Foco automático no input oculto ao carregar e manter sempre focado
-  useEffect(() => {
-    hiddenInputRef.current?.focus();
-    
-    const handleFocus = () => {
-      if (hiddenInputRef.current && document.activeElement !== hiddenInputRef.current) {
-        hiddenInputRef.current.focus();
+  // Handler para Enter key
+  const handleKeyPress = (e: React.KeyboardEvent, field: 'serial1' | 'serial2') => {
+    if (e.key === 'Enter') {
+      if (field === 'serial1' && serial1.length >= 8) {
+        handleSerial1Change(serial1);
+      } else if (field === 'serial2' && serial2.length >= 8) {
+        handleSerial2Change(serial2);
       }
-    };
+    }
+  };
 
-    const interval = setInterval(handleFocus, 100);
-    return () => clearInterval(interval);
-  }, []);
+  // Focus only when user clicks on the validation area
+  const handleValidationAreaClick = () => {
+    if (!isSerial1Complete) {
+      serial1Ref.current?.focus();
+    } else {
+      serial2Ref.current?.focus();
+    }
+  };
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -189,7 +185,7 @@ const ValidationSystem = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8" onClick={handleValidationAreaClick}>
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground">
@@ -215,31 +211,23 @@ const ValidationSystem = () => {
           </div>
         </Card>
 
-        {/* Input oculto para capturar leituras */}
-        <Input
-          ref={hiddenInputRef}
-          value={currentInput}
-          onChange={(e) => setCurrentInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="absolute opacity-0 pointer-events-none -z-10"
-          autoComplete="off"
-        />
-
-        {/* Display de códigos lidos */}
+        {/* Input Fields */}
         <div className="grid md:grid-cols-2 gap-8">
-          <Card className={`p-6 space-y-4 transition-all duration-300 ${
-            !isSerial1Complete ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
-          }`}>
-            <Label className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-5 h-5 ${!isSerial1Complete ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+          <Card className="p-6 space-y-4">
+            <Label htmlFor="serial1" className="text-xl font-semibold flex items-center gap-2">
+              <ScanLine className="w-5 h-5" />
               Código 1
-              {!isSerial1Complete && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-2xl p-6 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[80px] flex items-center justify-center ${
-              serial1 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
-            }`}>
-              {serial1 || 'Nenhum código lido'}
-            </div>
+            <Input
+              id="serial1"
+              ref={serial1Ref}
+              value={serial1}
+              onChange={(e) => handleSerial1Change(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, 'serial1')}
+              placeholder="Escaneie ou digite o primeiro código"
+              className="text-2xl p-6 text-center font-mono tracking-wider"
+              disabled={isSerial1Complete && validationState !== 'waiting'}
+            />
             {isSerial1Complete && (
               <div className="flex items-center justify-center text-success">
                 <CheckCircle className="w-5 h-5 mr-2" />
@@ -248,19 +236,21 @@ const ValidationSystem = () => {
             )}
           </Card>
 
-          <Card className={`p-6 space-y-4 transition-all duration-300 ${
-            isSerial1Complete && !serial2 ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
-          }`}>
-            <Label className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-5 h-5 ${isSerial1Complete && !serial2 ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+          <Card className="p-6 space-y-4">
+            <Label htmlFor="serial2" className="text-xl font-semibold flex items-center gap-2">
+              <ScanLine className="w-5 h-5" />
               Código 2
-              {isSerial1Complete && !serial2 && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-2xl p-6 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[80px] flex items-center justify-center ${
-              serial2 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
-            }`}>
-              {serial2 || 'Nenhum código lido'}
-            </div>
+            <Input
+              id="serial2"
+              ref={serial2Ref}
+              value={serial2}
+              onChange={(e) => handleSerial2Change(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, 'serial2')}
+              placeholder="Escaneie ou digite o segundo código"
+              className="text-2xl p-6 text-center font-mono tracking-wider"
+              disabled={!isSerial1Complete || (validationState !== 'waiting' && validationState !== 'error')}
+            />
           </Card>
         </div>
 
