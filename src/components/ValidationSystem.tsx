@@ -8,6 +8,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { AudioFeedback } from '@/utils/audioFeedback';
 import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
 import ConfigurationModal from '@/components/ConfigurationModal';
+import HistoryModal from '@/components/HistoryModal';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -17,6 +18,7 @@ const ValidationSystem = () => {
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [scannerInput, setScannerInput] = useState('');
   
   // Configuration state
@@ -106,6 +108,12 @@ const ValidationSystem = () => {
     setTimeout(() => scannerRef.current?.focus(), 100);
   };
 
+  // Limpa o histórico de validações
+  const clearHistory = () => {
+    setValidationHistory([]);
+    setShowHistoryModal(false);
+  };
+
   // Handler para o scanner automático
   const handleScannerInput = (value: string) => {
     setScannerInput(value);
@@ -166,7 +174,7 @@ const ValidationSystem = () => {
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onClear: resetValidation,
-    onHistory: () => console.log('Histórico - implementar modal/página'),
+    onHistory: () => setShowHistoryModal(true),
     onConfig: () => setShowConfigModal(true)
   });
 
@@ -287,7 +295,7 @@ const ValidationSystem = () => {
           </Button>
           
           <Button
-            onClick={() => console.log('Histórico')}
+            onClick={() => setShowHistoryModal(true)}
             size="lg"
             variant="outline"
             className="text-lg px-8 py-4"
@@ -313,6 +321,14 @@ const ValidationSystem = () => {
           onClose={() => setShowConfigModal(false)}
           config={config}
           onConfigChange={setConfig}
+        />
+
+        {/* History Modal */}
+        <HistoryModal
+          isOpen={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          history={validationHistory}
+          onClearHistory={clearHistory}
         />
 
         {/* Stats */}
