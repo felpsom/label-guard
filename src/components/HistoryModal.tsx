@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle, XCircle, AlertTriangle, Trash2, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Trash2, Calendar, Clock } from 'lucide-react';
 import { ValidationResult } from '@/types/validation';
 
 interface HistoryModalProps {
@@ -64,42 +64,33 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Calendar className="w-6 h-6" />
-            Histórico de Validações
+          <DialogTitle className="flex items-center gap-2 text-xl font-medium">
+            <Clock className="w-5 h-5" />
+            Histórico
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-3 gap-4">
-            <Card className="p-4 bg-gradient-success/10 border-success/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Aprovados</p>
-                  <p className="text-3xl font-bold text-success">{approvedCount}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-success" />
+          <div className="grid grid-cols-3 gap-3">
+            <Card className="p-3 bg-success/5 border-success/20">
+              <div className="text-center">
+                <p className="text-2xl font-semibold text-success">{approvedCount}</p>
+                <p className="text-xs text-muted-foreground">Aprovados</p>
               </div>
             </Card>
 
-            <Card className="p-4 bg-gradient-error/10 border-error/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Reprovados</p>
-                  <p className="text-3xl font-bold text-error">{rejectedCount}</p>
-                </div>
-                <XCircle className="w-8 h-8 text-error" />
+            <Card className="p-3 bg-error/5 border-error/20">
+              <div className="text-center">
+                <p className="text-2xl font-semibold text-error">{rejectedCount}</p>
+                <p className="text-xs text-muted-foreground">Reprovados</p>
               </div>
             </Card>
 
-            <Card className="p-4 bg-warning/10 border-warning/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Erros</p>
-                  <p className="text-3xl font-bold text-warning">{errorCount}</p>
-                </div>
-                <AlertTriangle className="w-8 h-8 text-warning" />
+            <Card className="p-3 bg-warning/5 border-warning/20">
+              <div className="text-center">
+                <p className="text-2xl font-semibold text-warning">{errorCount}</p>
+                <p className="text-xs text-muted-foreground">Erros</p>
               </div>
             </Card>
           </div>
@@ -108,12 +99,13 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
           <div className="flex justify-end">
             <Button
               onClick={onClearHistory}
-              variant="destructive"
+              variant="outline"
+              size="sm"
               disabled={history.length === 0}
-              className="gap-2"
+              className="gap-2 text-error hover:bg-error/10"
             >
               <Trash2 className="w-4 h-4" />
-              Limpar Histórico
+              Limpar
             </Button>
           </div>
 
