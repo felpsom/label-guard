@@ -141,15 +141,22 @@ const ValidationSystem = () => {
 
   // Foco automático no input oculto ao carregar e manter sempre focado
   useEffect(() => {
+    // Focus once on load, but do NOT steal focus from outside the iframe (Lovable chat)
     hiddenInputRef.current?.focus();
-    
+
     const handleFocus = () => {
-      if (hiddenInputRef.current && document.activeElement !== hiddenInputRef.current) {
-        hiddenInputRef.current.focus();
+      // Only manage focus if this document is active and visible
+      if (!document.hasFocus() || document.visibilityState !== 'visible') return;
+
+      const active = document.activeElement as HTMLElement | null;
+      const isInteractive = !!active && (active.isContentEditable || ['INPUT','TEXTAREA','SELECT','BUTTON'].includes(active.tagName));
+
+      if (hiddenInputRef.current && (!isInteractive || active === hiddenInputRef.current)) {
+        if (active !== hiddenInputRef.current) hiddenInputRef.current.focus();
       }
     };
 
-    const interval = setInterval(handleFocus, 100);
+    const interval = setInterval(handleFocus, 300);
     return () => clearInterval(interval);
   }, []);
 
@@ -220,9 +227,11 @@ const ValidationSystem = () => {
           ref={hiddenInputRef}
           value={currentInput}
           onChange={(e) => setCurrentInput(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           className="absolute opacity-0 pointer-events-none -z-10"
           autoComplete="off"
+          aria-hidden
+          tabIndex={-1}
         />
 
         {/* Display de códigos lidos */}
