@@ -83,12 +83,14 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-success': 'var(--gradient-success)',
 				'gradient-error': 'var(--gradient-error)',
-				'gradient-subtle': 'var(--gradient-subtle)'
+				'gradient-subtle': 'var(--gradient-subtle)',
+				'gradient-colormaq': 'var(--gradient-colormaq)'
 			},
 			boxShadow: {
 				'industrial': 'var(--shadow-industrial)',
 				'success': 'var(--shadow-success)',
-				'error': 'var(--shadow-error)'
+				'error': 'var(--shadow-error)',
+				'colormaq': 'var(--shadow-colormaq)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

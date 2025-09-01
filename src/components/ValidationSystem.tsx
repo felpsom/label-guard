@@ -205,7 +205,15 @@ const ValidationSystem = () => {
     <div className="min-h-screen bg-gradient-subtle p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4 mb-8">
+          {/* Colormaq Logo */}
+          <div className="flex justify-center items-center mb-4">
+            <img 
+              src="/src/assets/colormaq-logo.svg" 
+              alt="Colormaq Logo" 
+              className="h-16 w-auto filter brightness-0 invert dark:brightness-100 dark:invert-0"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-foreground">
             Sistema de Validação de Etiquetas
           </h1>
@@ -215,10 +223,10 @@ const ValidationSystem = () => {
         </div>
 
         {/* Status Card */}
-        <Card className={`p-6 transition-all duration-500 ${getStateClasses()}`}>
-          <div className="flex flex-col items-center space-y-4">
+        <Card className={`p-8 transition-all duration-500 shadow-colormaq ${getStateClasses()}`}>
+          <div className="flex flex-col items-center space-y-6">
             {getIcon()}
-            <h2 className={`text-2xl font-bold text-center ${
+            <h2 className={`text-3xl font-bold text-center ${
               validationState === 'approved' ? 'text-success-foreground' : 
               validationState === 'rejected' ? 'text-error-foreground' :
               validationState === 'error' ? 'text-warning-foreground' :

@@ -8,8 +8,8 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Industrial Design System */
-    --background: 210 15% 97%;
+    /* Colormaq Brand Design System */
+    --background: 0 0% 100%;
     --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
@@ -18,21 +18,21 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    /* Industrial Blue Primary */
-    --primary: 210 100% 45%;
+    /* Colormaq Blue Primary */
+    --primary: 200 100% 39%; /* Colormaq Blue #007ec4 */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 100% 65%;
+    --primary-glow: 200 100% 70%; /* Lighter blue for glows */
 
-    --secondary: 210 15% 92%;
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 310 100% 50%; /* Colormaq Pink/Magenta */
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 210 15% 94%;
     --muted-foreground: 215 15% 45%;
 
-    --accent: 210 15% 90%;
+    --accent: 180 100% 60%; /* Colormaq Cyan */
     --accent-foreground: 215 25% 15%;
 
-    /* Industrial Status Colors */
+    /* Colormaq Status Colors */
     --success: 142 85% 35%;
     --success-foreground: 0 0% 100%;
     --success-glow: 142 85% 55%;
@@ -50,36 +50,31 @@ All colors MUST be HSL.
 
     --border: 210 15% 88%;
     --input: 210 15% 90%;
-    --ring: 210 100% 45%;
+    --ring: 200 100% 39%; /* Colormaq blue for focus rings */
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    /* Colormaq Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 39%), hsl(180 100% 60%)); /* Blue to Cyan */
     --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success-glow)));
     --gradient-error: linear-gradient(135deg, hsl(var(--error)), hsl(var(--error-glow)));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(200 100% 97%)); /* Subtle blue tint */
+    --gradient-colormaq: linear-gradient(135deg, hsl(200 100% 39%), hsl(310 100% 50%)); /* Brand gradient */
 
-    /* Shadows */
-    --shadow-industrial: 0 8px 32px -8px hsl(var(--primary) / 0.15);
+    /* Colormaq Shadows */
+    --shadow-industrial: 0 8px 32px -8px hsl(200 100% 39% / 0.15);
     --shadow-success: 0 8px 32px -8px hsl(var(--success) / 0.25);
     --shadow-error: 0 8px 32px -8px hsl(var(--error) / 0.25);
+    --shadow-colormaq: 0 20px 40px -15px hsl(200 100% 39% / 0.3);
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 200 100% 39%; /* Colormaq blue sidebar */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 200 100% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 100% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 50% 70%;
+    --sidebar-ring: 200 100% 60%;
   }
 
   .dark {
@@ -92,32 +87,36 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Colormaq Dark Mode Colors */
+    --primary: 200 100% 50%; /* Brighter blue for dark mode */
+    --primary-foreground: 222.2 84% 4.9%;
+    --primary-glow: 200 100% 80%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 310 100% 60%; /* Brighter magenta for dark mode */
+    --secondary-foreground: 222.2 84% 4.9%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 180 100% 70%; /* Brighter cyan for dark mode */
+    --accent-foreground: 222.2 84% 4.9%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --ring: 200 100% 50%; /* Colormaq blue for focus rings */
+    
+    /* Dark Sidebar */
+    --sidebar-background: 200 100% 15%; /* Dark Colormaq blue */
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 200 100% 50%;
+    --sidebar-primary-foreground: 222.2 84% 4.9%;
+    --sidebar-accent: 200 100% 25%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 200 50% 30%;
+    --sidebar-ring: 200 100% 60%;
   }
 }
 
