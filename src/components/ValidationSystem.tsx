@@ -8,6 +8,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { AudioFeedback } from '@/utils/audioFeedback';
 import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
 import ConfigurationModal from '@/components/ConfigurationModal';
+import HistoryModal from '@/components/HistoryModal';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -17,6 +18,7 @@ const ValidationSystem = () => {
   const [isSerial1Complete, setIsSerial1Complete] = useState(false);
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
   
   // Configuration state
@@ -160,10 +162,15 @@ const ValidationSystem = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Clear history function
+  const clearHistory = () => {
+    setValidationHistory([]);
+  };
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onClear: resetValidation,
-    onHistory: () => console.log('Histórico - implementar modal/página'),
+    onHistory: () => setShowHistoryModal(true),
     onConfig: () => setShowConfigModal(true)
   });
 
@@ -195,23 +202,23 @@ const ValidationSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-subtle p-4">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-foreground">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">
             Sistema de Validação de Etiquetas
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg text-muted-foreground">
             Escaneie ou digite os dois códigos para validação
           </p>
         </div>
 
         {/* Status Card */}
-        <Card className={`p-8 transition-all duration-500 ${getStateClasses()}`}>
-          <div className="flex flex-col items-center space-y-6">
+        <Card className={`p-6 transition-all duration-500 ${getStateClasses()}`}>
+          <div className="flex flex-col items-center space-y-4">
             {getIcon()}
-            <h2 className={`text-3xl font-bold text-center ${
+            <h2 className={`text-2xl font-bold text-center ${
               validationState === 'approved' ? 'text-success-foreground' : 
               validationState === 'rejected' ? 'text-error-foreground' :
               validationState === 'error' ? 'text-warning-foreground' :
@@ -235,7 +242,7 @@ const ValidationSystem = () => {
         />
 
         {/* Display de códigos lidos */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
           <Card className={`p-6 space-y-4 transition-all duration-300 ${
             !isSerial1Complete ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
           }`}>
@@ -244,7 +251,7 @@ const ValidationSystem = () => {
               Código 1
               {!isSerial1Complete && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-2xl p-6 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[80px] flex items-center justify-center ${
+            <div className={`text-xl p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[60px] flex items-center justify-center break-all ${
               serial1 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
             }`}>
               {serial1 || 'Nenhum código lido'}
@@ -265,7 +272,7 @@ const ValidationSystem = () => {
               Código 2
               {isSerial1Complete && !serial2 && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-2xl p-6 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[80px] flex items-center justify-center ${
+            <div className={`text-xl p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[60px] flex items-center justify-center break-all ${
               serial2 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
             }`}>
               {serial2 || 'Nenhum código lido'}
@@ -274,34 +281,34 @@ const ValidationSystem = () => {
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center flex-wrap gap-3">
           <Button
             onClick={resetValidation}
-            size="lg"
+            size="default"
             variant="outline"
-            className="text-lg px-8 py-4"
+            className="px-6 py-2"
           >
-            <RotateCcw className="w-5 h-5 mr-2" />
+            <RotateCcw className="w-4 h-4 mr-2" />
             Limpar (F9)
           </Button>
           
           <Button
-            onClick={() => console.log('Histórico')}
-            size="lg"
+            onClick={() => setShowHistoryModal(true)}
+            size="default"
             variant="outline"
-            className="text-lg px-8 py-4"
+            className="px-6 py-2"
           >
-            <History className="w-5 h-5 mr-2" />
+            <History className="w-4 h-4 mr-2" />
             Histórico (F6)
           </Button>
           
           <Button
             onClick={() => setShowConfigModal(true)}
-            size="lg"
+            size="default"
             variant="outline"
-            className="text-lg px-8 py-4"
+            className="px-6 py-2"
           >
-            <Settings className="w-5 h-5 mr-2" />
+            <Settings className="w-4 h-4 mr-2" />
             Configurações (Ctrl+.)
           </Button>
         </div>
@@ -312,6 +319,14 @@ const ValidationSystem = () => {
           onClose={() => setShowConfigModal(false)}
           config={config}
           onConfigChange={setConfig}
+        />
+
+        {/* History Modal */}
+        <HistoryModal
+          isOpen={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          validationHistory={validationHistory}
+          onClearHistory={clearHistory}
         />
 
         {/* Stats */}
