@@ -202,8 +202,8 @@ const ValidationSystem = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-subtle p-2 overflow-hidden flex flex-col">
-      <div className="w-full max-w-4xl mx-auto h-full flex flex-col gap-2">
+    <div className="h-screen w-screen bg-gradient-subtle overflow-hidden flex items-center justify-center">
+      <div className="w-full max-w-4xl h-full max-h-screen flex flex-col gap-2 p-2">
         {/* Header */}
         <div className="text-center flex-shrink-0">
           {/* Colormaq Logo */}
