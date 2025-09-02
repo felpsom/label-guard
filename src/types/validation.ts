@@ -6,6 +6,11 @@ export interface ValidationResult {
   state: ValidationState;
   message: string;
   timestamp: Date;
+  productionLine?: string;
+  productModel?: string;
+  voltage?: string;
+  stationId?: string;
+  lineId?: string;
 }
 
 export interface ValidationConfig {
@@ -13,4 +18,7 @@ export interface ValidationConfig {
   soundEnabled: boolean;
   stationId?: string;
   lineId?: string;
+  productionLine?: string;
+  productModel?: string;
+  voltage?: string;
 }

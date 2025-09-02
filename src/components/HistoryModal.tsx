@@ -84,19 +84,21 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
           {/* Tabela de histórico */}
           <div className="flex-1 overflow-auto border rounded-lg">
             <Table>
-              <TableHeader>
+               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="w-20">Status</TableHead>
                   <TableHead>Código 1</TableHead>
                   <TableHead>Código 2</TableHead>
-                  <TableHead>Resultado</TableHead>
+                  <TableHead>Linha</TableHead>
+                  <TableHead>Modelo</TableHead>
+                  <TableHead>Voltagem</TableHead>
                   <TableHead>Data/Hora</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {validationHistory.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       Nenhuma validação encontrada
                     </TableCell>
                   </TableRow>
@@ -104,15 +106,17 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
                   validationHistory.map((validation, index) => (
                     <TableRow key={index}>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           {getStateIcon(validation.state)}
                           {getStateBadge(validation.state)}
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-sm">{validation.serial1}</TableCell>
-                      <TableCell className="font-mono text-sm">{validation.serial2}</TableCell>
-                      <TableCell>{validation.message}</TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="font-mono text-xs">{validation.serial1}</TableCell>
+                      <TableCell className="font-mono text-xs">{validation.serial2}</TableCell>
+                      <TableCell className="text-xs">{validation.productionLine || '-'}</TableCell>
+                      <TableCell className="text-xs">{validation.productModel || '-'}</TableCell>
+                      <TableCell className="text-xs">{validation.voltage || '-'}</TableCell>
+                      <TableCell className="text-xs">
                         {validation.timestamp.toLocaleString('pt-BR')}
                       </TableCell>
                     </TableRow>

@@ -121,7 +121,7 @@ const ConfigurationModal: React.FC<ConfigurationModalProps> = ({
                     <span className="font-medium text-success">✓ Aprovado:</span> Beep curto e agudo
                   </div>
                   <div className="text-sm">
-                    <span className="font-medium text-error">✗ Reprovado:</span> Beep longo e grave
+                    <span className="font-medium text-error">✗ Reprovado:</span> Alarme alto (sequência intensa)
                   </div>
                   <div className="text-sm">
                     <span className="font-medium text-warning">⚠ Erro:</span> Beep médio de alerta
@@ -159,6 +159,48 @@ const ConfigurationModal: React.FC<ConfigurationModalProps> = ({
               </div>
               <p className="text-sm text-muted-foreground">
                 Identificação para registro nos logs de validação
+              </p>
+            </div>
+          </Card>
+
+          {/* Informações de Produção */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <Label className="text-lg font-semibold">Informações de Produção</Label>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="productionLine" className="text-sm">Linha de Produção</Label>
+                  <Input
+                    id="productionLine"
+                    value={config.productionLine || ''}
+                    onChange={(e) => updateConfig({ productionLine: e.target.value })}
+                    placeholder="LINHA-01"
+                    className="font-mono"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="productModel" className="text-sm">Modelo do Produto</Label>
+                  <Input
+                    id="productModel"
+                    value={config.productModel || ''}
+                    onChange={(e) => updateConfig({ productModel: e.target.value })}
+                    placeholder="CM-2024-X"
+                    className="font-mono"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voltage" className="text-sm">Voltagem</Label>
+                  <Input
+                    id="voltage"
+                    value={config.voltage || ''}
+                    onChange={(e) => updateConfig({ voltage: e.target.value })}
+                    placeholder="220V"
+                    className="font-mono"
+                  />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Informações do produto para melhor identificação no histórico
               </p>
             </div>
           </Card>

@@ -37,8 +37,24 @@ export class AudioFeedback {
   }
 
   public static playError() {
-    // Beep longo e grave para reprovação
-    this.playTone(300, 0.8);
+    // Som de alarme alto e longo para reprovação
+    this.playAlarmSequence();
+  }
+
+  private static playAlarmSequence() {
+    // Sequência de alarme com múltiplos tons altos e graves
+    try {
+      const ctx = this.getAudioContext();
+      
+      // Primeiro tom - grave e alto
+      setTimeout(() => this.playTone(200, 0.3, 'square'), 0);
+      setTimeout(() => this.playTone(400, 0.3, 'square'), 300);
+      setTimeout(() => this.playTone(200, 0.3, 'square'), 600);
+      setTimeout(() => this.playTone(400, 0.3, 'square'), 900);
+      
+    } catch (error) {
+      console.warn('Audio playback not supported:', error);
+    }
   }
 
   public static playWarning() {

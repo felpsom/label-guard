@@ -26,7 +26,10 @@ const ValidationSystem = () => {
     autoResetTime: 3,
     soundEnabled: true,
     stationId: '',
-    lineId: ''
+    lineId: '',
+    productionLine: '',
+    productModel: '',
+    voltage: ''
   });
   
   const hiddenInputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +75,12 @@ const ValidationSystem = () => {
       serial2: s2,
       state: norm1 === norm2 ? 'approved' : 'rejected',
       message: norm1 === norm2 ? 'APROVADO - Códigos coincidem' : 'REPROVADO - Códigos diferentes',
-      timestamp: new Date()
+      timestamp: new Date(),
+      productionLine: config.productionLine,
+      productModel: config.productModel,
+      voltage: config.voltage,
+      stationId: config.stationId,
+      lineId: config.lineId
     };
     
     setValidationState(result.state);
@@ -222,11 +230,37 @@ const ValidationSystem = () => {
           </p>
         </div>
 
+        {/* Informações de Produção Atuais */}
+        {(config.productionLine || config.productModel || config.voltage) && (
+          <Card className="p-4 bg-gradient-subtle shadow-industrial border-primary/10">
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              {config.productionLine && (
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Linha</div>
+                  <div className="font-mono font-semibold text-primary">{config.productionLine}</div>
+                </div>
+              )}
+              {config.productModel && (
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Modelo</div>
+                  <div className="font-mono font-semibold text-primary">{config.productModel}</div>
+                </div>
+              )}
+              {config.voltage && (
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Voltagem</div>
+                  <div className="font-mono font-semibold text-primary">{config.voltage}</div>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
         {/* Status Card */}
-        <Card className={`p-8 transition-all duration-500 shadow-colormaq ${getStateClasses()}`}>
-          <div className="flex flex-col items-center space-y-6">
+        <Card className={`p-6 transition-all duration-500 shadow-colormaq ${getStateClasses()}`}>
+          <div className="flex flex-col items-center space-y-4">
             {getIcon()}
-            <h2 className={`text-3xl font-bold text-center ${
+            <h2 className={`text-2xl font-bold text-center ${
               validationState === 'approved' ? 'text-success-foreground' : 
               validationState === 'rejected' ? 'text-error-foreground' :
               validationState === 'error' ? 'text-warning-foreground' :

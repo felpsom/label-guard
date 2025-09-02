@@ -8,29 +8,29 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Colormaq Brand Design System */
-    --background: 0 0% 100%;
-    --foreground: 215 25% 15%;
+    /* Colormaq Brand Design System - Tons Suaves */
+    --background: 200 20% 98%; /* Fundo com toque suave de azul */
+    --foreground: 215 25% 25%; /* Texto mais suave */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 215 25% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 215 25% 25%;
 
-    /* Colormaq Blue Primary */
-    --primary: 200 100% 39%; /* Colormaq Blue #007ec4 */
+    /* Colormaq Blue Primary - Tom mais suave */
+    --primary: 200 80% 45%; /* Azul mais suave */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 200 100% 70%; /* Lighter blue for glows */
+    --primary-glow: 200 60% 75%; /* Brilho mais suave */
 
-    --secondary: 310 100% 50%; /* Colormaq Pink/Magenta */
+    --secondary: 310 70% 60%; /* Magenta mais suave */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 210 20% 96%; /* Mais suave */
+    --muted-foreground: 215 15% 50%;
 
-    --accent: 180 100% 60%; /* Colormaq Cyan */
-    --accent-foreground: 215 25% 15%;
+    --accent: 180 70% 65%; /* Ciano mais suave */
+    --accent-foreground: 215 25% 25%;
 
     /* Colormaq Status Colors */
     --success: 142 85% 35%;
@@ -52,18 +52,18 @@ All colors MUST be HSL.
     --input: 210 15% 90%;
     --ring: 200 100% 39%; /* Colormaq blue for focus rings */
 
-    /* Colormaq Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(200 100% 39%), hsl(180 100% 60%)); /* Blue to Cyan */
+    /* Colormaq Gradients - Tons Suaves */
+    --gradient-primary: linear-gradient(135deg, hsl(200 80% 45%), hsl(180 70% 65%)); /* Gradiente mais suave */
     --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success-glow)));
     --gradient-error: linear-gradient(135deg, hsl(var(--error)), hsl(var(--error-glow)));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(200 100% 97%)); /* Subtle blue tint */
-    --gradient-colormaq: linear-gradient(135deg, hsl(200 100% 39%), hsl(310 100% 50%)); /* Brand gradient */
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(200 30% 95%)); /* Gradiente super suave */
+    --gradient-colormaq: linear-gradient(135deg, hsl(200 80% 45%), hsl(310 70% 60%)); /* Brand gradient suave */
 
-    /* Colormaq Shadows */
-    --shadow-industrial: 0 8px 32px -8px hsl(200 100% 39% / 0.15);
-    --shadow-success: 0 8px 32px -8px hsl(var(--success) / 0.25);
-    --shadow-error: 0 8px 32px -8px hsl(var(--error) / 0.25);
-    --shadow-colormaq: 0 20px 40px -15px hsl(200 100% 39% / 0.3);
+    /* Colormaq Shadows - Mais suaves */
+    --shadow-industrial: 0 4px 20px -4px hsl(200 80% 45% / 0.08);
+    --shadow-success: 0 4px 20px -4px hsl(var(--success) / 0.15);
+    --shadow-error: 0 4px 20px -4px hsl(var(--error) / 0.15);
+    --shadow-colormaq: 0 8px 24px -8px hsl(200 80% 45% / 0.12);
 
     --radius: 0.75rem;
 
