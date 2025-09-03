@@ -9,6 +9,10 @@ import { AudioFeedback } from '@/utils/audioFeedback';
 import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
 import ConfigurationModal from '@/components/ConfigurationModal';
 import HistoryModal from '@/components/HistoryModal';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import OfflineIndicator from '@/components/OfflineIndicator';
+import MobileOptimizations from '@/components/MobileOptimizations';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -20,6 +24,7 @@ const ValidationSystem = () => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
   // Configuration state
   const [config, setConfig] = useState<ValidationConfig>({
@@ -31,6 +36,9 @@ const ValidationSystem = () => {
     productModel: '',
     voltage: ''
   });
+  
+  // Offline storage hook
+  const offlineStorage = useOfflineStorage();
   
   const hiddenInputRef = useRef<HTMLInputElement>(null);
 
@@ -87,7 +95,11 @@ const ValidationSystem = () => {
     setMessage(result.message);
     
     // Add to history
-    setValidationHistory(prev => [result, ...prev.slice(0, 99)]); // Keep last 100 records
+    const updatedHistory = [result, ...validationHistory.slice(0, 99)]; // Keep last 100 records
+    setValidationHistory(updatedHistory);
+    
+    // Save to offline storage
+    offlineStorage.saveValidationHistory(updatedHistory);
     
     // Audio feedback
     if (config.soundEnabled) {
@@ -149,6 +161,37 @@ const ValidationSystem = () => {
     }
   };
 
+  // Inicialização e persistência de dados
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        // Carregar configurações salvas
+        const savedConfig = await offlineStorage.loadConfig();
+        if (savedConfig) {
+          setConfig(savedConfig);
+        }
+        
+        // Carregar histórico salvo
+        const savedHistory = await offlineStorage.loadValidationHistory();
+        setValidationHistory(savedHistory);
+        
+        // Mostrar prompt de instalação PWA após 2 segundos se não estiver instalado
+        setTimeout(() => {
+          setShowInstallPrompt(true);
+        }, 2000);
+      } catch (error) {
+        console.error('Erro ao carregar dados salvos:', error);
+      }
+    };
+
+    initializeData();
+  }, [offlineStorage]);
+
+  // Salvar configurações quando alteradas
+  useEffect(() => {
+    offlineStorage.saveConfig(config);
+  }, [config, offlineStorage]);
+
   // Foco automático no input oculto ao carregar e manter sempre focado
   useEffect(() => {
     // Focus once on load, but do NOT steal focus from outside the iframe (Lovable chat)
@@ -173,6 +216,7 @@ const ValidationSystem = () => {
   // Clear history function
   const clearHistory = () => {
     setValidationHistory([]);
+    offlineStorage.saveValidationHistory([]);
   };
 
   // Keyboard shortcuts
@@ -197,35 +241,40 @@ const ValidationSystem = () => {
   };
 
   const getIcon = () => {
+    const iconClass = "w-full h-full";
     switch (validationState) {
       case 'approved':
-        return <CheckCircle className="w-16 h-16 text-success-foreground" />;
+        return <CheckCircle className={`${iconClass} text-success-foreground`} />;
       case 'rejected':
-        return <XCircle className="w-16 h-16 text-error-foreground" />;
+        return <XCircle className={`${iconClass} text-error-foreground`} />;
       case 'error':
-        return <ScanLine className="w-16 h-16 text-warning-foreground" />;
+        return <ScanLine className={`${iconClass} text-warning-foreground`} />;
       default:
-        return <ScanLine className="w-16 h-16 text-primary animate-pulse" />;
+        return <ScanLine className={`${iconClass} text-primary animate-pulse`} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle p-4">
+    <div className="min-h-screen bg-gradient-subtle p-4 pb-20 mobile-optimized">
+      <MobileOptimizations />
       <div className="max-w-4xl mx-auto space-y-6">
+        
+        {/* Offline Indicator */}
+        <OfflineIndicator />
         {/* Header */}
-        <div className="text-center space-y-4 mb-8">
+        <div className="text-center space-y-2 md:space-y-4 mb-6 md:mb-8">
           {/* Colormaq Logo */}
-          <div className="flex justify-center items-center mb-4">
+          <div className="flex justify-center items-center mb-2 md:mb-4">
             <img 
               src="/src/assets/colormaq-logo.svg" 
               alt="Colormaq Logo" 
-              className="h-16 w-auto filter brightness-0 invert dark:brightness-100 dark:invert-0"
+              className="h-12 md:h-16 w-auto filter brightness-0 invert dark:brightness-100 dark:invert-0"
             />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Sistema de Validação de Etiquetas
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base md:text-lg text-muted-foreground px-4">
             Escaneie ou digite os dois códigos para validação
           </p>
         </div>
@@ -257,10 +306,12 @@ const ValidationSystem = () => {
         )}
 
         {/* Status Card */}
-        <Card className={`p-6 transition-all duration-500 shadow-colormaq ${getStateClasses()}`}>
-          <div className="flex flex-col items-center space-y-4">
-            {getIcon()}
-            <h2 className={`text-2xl font-bold text-center ${
+        <Card className={`p-4 md:p-6 transition-all duration-500 shadow-colormaq ${getStateClasses()}`}>
+          <div className="flex flex-col items-center space-y-3 md:space-y-4">
+            <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
+              {getIcon()}
+            </div>
+            <h2 className={`text-xl md:text-2xl font-bold text-center px-2 ${
               validationState === 'approved' ? 'text-success-foreground' : 
               validationState === 'rejected' ? 'text-error-foreground' :
               validationState === 'error' ? 'text-warning-foreground' :
@@ -284,37 +335,37 @@ const ValidationSystem = () => {
         />
 
         {/* Display de códigos lidos */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className={`p-6 space-y-4 transition-all duration-300 ${
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 ${
             !isSerial1Complete ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
           }`}>
-            <Label className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-5 h-5 ${!isSerial1Complete ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2">
+              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${!isSerial1Complete ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
               Código 1
-              {!isSerial1Complete && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
+              {!isSerial1Complete && <span className="text-xs md:text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-xl p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[60px] flex items-center justify-center break-all ${
+            <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
               serial1 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
             }`}>
               {serial1 || 'Nenhum código lido'}
             </div>
             {isSerial1Complete && (
               <div className="flex items-center justify-center text-success">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                <span className="font-medium">Código 1 registrado</span>
+                <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                <span className="font-medium text-sm md:text-base">Código 1 registrado</span>
               </div>
             )}
           </Card>
 
-          <Card className={`p-6 space-y-4 transition-all duration-300 ${
+          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 ${
             isSerial1Complete && !serial2 ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
           }`}>
-            <Label className="text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-5 h-5 ${isSerial1Complete && !serial2 ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2">
+              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${isSerial1Complete && !serial2 ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
               Código 2
-              {isSerial1Complete && !serial2 && <span className="text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
+              {isSerial1Complete && !serial2 && <span className="text-xs md:text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
             </Label>
-            <div className={`text-xl p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[60px] flex items-center justify-center break-all ${
+            <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
               serial2 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
             }`}>
               {serial2 || 'Nenhum código lido'}
@@ -323,35 +374,38 @@ const ValidationSystem = () => {
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center flex-wrap gap-3">
+        <div className="flex justify-center flex-wrap gap-2 md:gap-3">
           <Button
             onClick={resetValidation}
             size="default"
             variant="outline"
-            className="px-6 py-2"
+            className="px-4 py-2 md:px-6 text-sm md:text-base"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Limpar (F9)
+            <RotateCcw className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Limpar (F9)</span>
+            <span className="sm:hidden">Limpar</span>
           </Button>
           
           <Button
             onClick={() => setShowHistoryModal(true)}
             size="default"
             variant="outline"
-            className="px-6 py-2"
+            className="px-4 py-2 md:px-6 text-sm md:text-base"
           >
-            <History className="w-4 h-4 mr-2" />
-            Histórico (F6)
+            <History className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Histórico (F6)</span>
+            <span className="sm:hidden">Histórico</span>
           </Button>
           
           <Button
             onClick={() => setShowConfigModal(true)}
             size="default"
             variant="outline"
-            className="px-6 py-2"
+            className="px-4 py-2 md:px-6 text-sm md:text-base"
           >
-            <Settings className="w-4 h-4 mr-2" />
-            Configurações (Ctrl+.)
+            <Settings className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Config</span>
+            <span className="sm:hidden">Config</span>
           </Button>
         </div>
 
@@ -413,6 +467,11 @@ const ValidationSystem = () => {
             </div>
           </div>
         </Card>
+        
+        {/* PWA Install Prompt */}
+        {showInstallPrompt && (
+          <PWAInstallPrompt onDismiss={() => setShowInstallPrompt(false)} />
+        )}
       </div>
     </div>
   );
