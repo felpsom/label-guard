@@ -1,5 +1,4 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { XCircle, AlertTriangle } from 'lucide-react';
@@ -23,60 +22,64 @@ const RejectedModal: React.FC<RejectedModalProps> = ({
     onConfirm();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent 
-        className="sm:max-w-[500px] bg-error/5 border-error"
-      >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-2xl text-error">
-            <XCircle className="w-8 h-8" />
-            PRODUTO REPROVADO
-          </DialogTitle>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 bg-red-600 flex items-center justify-center p-4 animate-pulse">
+      <div className="w-full max-w-2xl space-y-8 text-center">
+        {/* Ícone de alerta piscando */}
+        <div className="flex justify-center">
+          <div className="bg-red-800/30 p-6 rounded-full">
+            <XCircle className="w-24 h-24 md:w-32 md:h-32 text-white animate-bounce" />
+          </div>
+        </div>
         
-        <div className="space-y-6 py-4">
-          <div className="flex items-center justify-center">
-            <div className="bg-error/10 p-4 rounded-full">
-              <AlertTriangle className="w-16 h-16 text-error animate-pulse" />
+        {/* Título principal */}
+        <div className="space-y-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-white uppercase tracking-wide">
+            PRODUTO REPROVADO
+          </h1>
+          <div className="bg-red-800/30 p-2 rounded">
+            <AlertTriangle className="w-8 h-8 text-yellow-300 mx-auto mb-2 animate-pulse" />
+            <p className="text-xl md:text-2xl font-semibold text-white">
+              CÓDIGOS NÃO COINCIDEM!
+            </p>
+          </div>
+        </div>
+
+        {/* Códigos em destaque */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="p-6 bg-red-800/20 border-2 border-red-400">
+            <div className="text-white/80 mb-2 text-lg font-semibold">CÓDIGO 1:</div>
+            <div className="font-mono text-2xl break-all bg-white/10 p-4 rounded text-white border-2 border-red-400">
+              {serial1}
             </div>
-          </div>
+          </Card>
           
-          <div className="text-center">
-            <p className="text-lg font-semibold text-error mb-4">
-              Os códigos das etiquetas não coincidem!
-            </p>
-            <p className="text-muted-foreground">
-              Verifique as etiquetas e tente novamente.
-            </p>
-          </div>
+          <Card className="p-6 bg-red-800/20 border-2 border-red-400">
+            <div className="text-white/80 mb-2 text-lg font-semibold">CÓDIGO 2:</div>
+            <div className="font-mono text-2xl break-all bg-white/10 p-4 rounded text-white border-2 border-red-400">
+              {serial2}
+            </div>
+          </Card>
+        </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <Card className="p-4 bg-muted/50">
-              <div className="text-sm text-muted-foreground mb-1">Código 1:</div>
-              <div className="font-mono text-lg break-all bg-background p-2 rounded border">
-                {serial1}
-              </div>
-            </Card>
-            
-            <Card className="p-4 bg-muted/50">
-              <div className="text-sm text-muted-foreground mb-1">Código 2:</div>
-              <div className="font-mono text-lg break-all bg-background p-2 rounded border">
-                {serial2}
-              </div>
-            </Card>
-          </div>
-
+        {/* Instrução e botão */}
+        <div className="space-y-6">
+          <p className="text-xl md:text-2xl text-white font-medium">
+            Verifique as etiquetas e tente novamente
+          </p>
+          
           <Button 
             onClick={handleConfirm}
-            className="w-full bg-error hover:bg-error/90 text-error-foreground text-lg py-6"
+            className="w-full max-w-md mx-auto bg-white hover:bg-gray-100 text-red-600 text-2xl py-8 px-12 font-bold uppercase tracking-wide shadow-2xl border-4 border-white"
             size="lg"
           >
             CONFIRMAR E CONTINUAR
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
