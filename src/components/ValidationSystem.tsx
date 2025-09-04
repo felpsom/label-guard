@@ -9,6 +9,7 @@ import { AudioFeedback } from '@/utils/audioFeedback';
 import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
 import ConfigurationModal from '@/components/ConfigurationModal';
 import HistoryModal from '@/components/HistoryModal';
+import RejectedModal from '@/components/RejectedModal';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import MobileOptimizations from '@/components/MobileOptimizations';
@@ -23,6 +24,7 @@ const ValidationSystem = () => {
   const [validationHistory, setValidationHistory] = useState<ValidationResult[]>([]);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showRejectedModal, setShowRejectedModal] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
@@ -101,19 +103,29 @@ const ValidationSystem = () => {
     // Save to offline storage
     offlineStorage.saveValidationHistory(updatedHistory);
     
-    // Audio feedback
+    // Audio feedback e ação baseada no resultado
     if (config.soundEnabled) {
       if (result.state === 'approved') {
         AudioFeedback.playSuccess();
+        // Auto-reset para aprovado após tempo configurável
+        setTimeout(() => {
+          resetValidation();
+        }, config.autoResetTime * 1000);
       } else {
+        // Para reprovado, toca alarme contínuo e mostra modal
         AudioFeedback.playError();
+        setShowRejectedModal(true);
+      }
+    } else {
+      // Se som desabilitado, ainda assim diferencia aprovado de reprovado
+      if (result.state === 'approved') {
+        setTimeout(() => {
+          resetValidation();
+        }, config.autoResetTime * 1000);
+      } else {
+        setShowRejectedModal(true);
       }
     }
-    
-    // Auto-reset após tempo configurável
-    setTimeout(() => {
-      resetValidation();
-    }, config.autoResetTime * 1000);
   };
 
   // Reset do sistema
@@ -124,7 +136,14 @@ const ValidationSystem = () => {
     setIsSerial1Complete(false);
     setValidationState('waiting');
     setMessage('Aguardando primeira leitura...');
+    setShowRejectedModal(false);
+    AudioFeedback.stopAlarm(); // Garantir que o alarme pare
     hiddenInputRef.current?.focus();
+  };
+
+  // Handler para confirmação do modal de reprovado
+  const handleRejectedConfirm = () => {
+    resetValidation();
   };
 
   // Handler para leitura automática
@@ -423,6 +442,14 @@ const ValidationSystem = () => {
           onClose={() => setShowHistoryModal(false)}
           validationHistory={validationHistory}
           onClearHistory={clearHistory}
+        />
+
+        {/* Rejected Modal */}
+        <RejectedModal
+          isOpen={showRejectedModal}
+          onConfirm={handleRejectedConfirm}
+          serial1={serial1}
+          serial2={serial2}
         />
 
         {/* Stats */}

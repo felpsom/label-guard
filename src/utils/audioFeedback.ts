@@ -1,6 +1,8 @@
 // Audio feedback utilities for validation system
 export class AudioFeedback {
   private static audioContext: AudioContext | null = null;
+  private static alarmInterval: NodeJS.Timeout | null = null;
+  private static currentOscillator: OscillatorNode | null = null;
 
   private static getAudioContext(): AudioContext {
     if (!this.audioContext) {
@@ -37,23 +39,44 @@ export class AudioFeedback {
   }
 
   public static playError() {
-    // Som de alarme alto e longo para reprovação
-    this.playAlarmSequence();
+    // Som de alarme contínuo para reprovação
+    this.startContinuousAlarm();
   }
 
-  private static playAlarmSequence() {
-    // Sequência de alarme com múltiplos tons altos e graves
+  private static startContinuousAlarm() {
+    // Para qualquer alarme anterior
+    this.stopAlarm();
+    
     try {
-      const ctx = this.getAudioContext();
+      const playAlarmTone = () => {
+        this.playTone(200, 0.3, 'square');
+        setTimeout(() => this.playTone(400, 0.3, 'square'), 300);
+      };
+
+      // Toca imediatamente
+      playAlarmTone();
       
-      // Primeiro tom - grave e alto
-      setTimeout(() => this.playTone(200, 0.3, 'square'), 0);
-      setTimeout(() => this.playTone(400, 0.3, 'square'), 300);
-      setTimeout(() => this.playTone(200, 0.3, 'square'), 600);
-      setTimeout(() => this.playTone(400, 0.3, 'square'), 900);
+      // E repete a cada 600ms
+      this.alarmInterval = setInterval(playAlarmTone, 600);
       
     } catch (error) {
       console.warn('Audio playback not supported:', error);
+    }
+  }
+
+  public static stopAlarm() {
+    if (this.alarmInterval) {
+      clearInterval(this.alarmInterval);
+      this.alarmInterval = null;
+    }
+    
+    if (this.currentOscillator) {
+      try {
+        this.currentOscillator.stop();
+        this.currentOscillator = null;
+      } catch (error) {
+        // Oscillator já parado
+      }
     }
   }
 
