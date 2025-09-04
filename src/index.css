@@ -18,10 +18,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 25%;
 
-    /* Colormaq Blue Primary - Tom mais suave */
-    --primary: 200 80% 45%; /* Azul mais suave */
+    /* CheckTag Blue Primary - Azul escuro */
+    --primary: 218 80% 35%; /* #133fa2 convertido para HSL */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 200 60% 75%; /* Brilho mais suave */
+    --primary-glow: 218 60% 55%; /* Brilho mais suave */
 
     --secondary: 310 70% 60%; /* Magenta mais suave */
     --secondary-foreground: 0 0% 100%;
@@ -50,31 +50,31 @@ All colors MUST be HSL.
 
     --border: 210 15% 88%;
     --input: 210 15% 90%;
-    --ring: 200 100% 39%; /* Colormaq blue for focus rings */
+    --ring: 218 80% 35%; /* CheckTag blue for focus rings */
 
-    /* Colormaq Gradients - Tons Suaves */
-    --gradient-primary: linear-gradient(135deg, hsl(200 80% 45%), hsl(180 70% 65%)); /* Gradiente mais suave */
+    /* CheckTag Gradients - Tons Suaves */
+    --gradient-primary: linear-gradient(135deg, hsl(218 80% 35%), hsl(180 70% 65%)); /* Gradiente mais suave */
     --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success-glow)));
     --gradient-error: linear-gradient(135deg, hsl(var(--error)), hsl(var(--error-glow)));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(200 30% 95%)); /* Gradiente super suave */
-    --gradient-colormaq: linear-gradient(135deg, hsl(200 80% 45%), hsl(310 70% 60%)); /* Brand gradient suave */
+    --gradient-checktag: linear-gradient(135deg, hsl(218 80% 35%), hsl(310 70% 60%)); /* Brand gradient suave */
 
-    /* Colormaq Shadows - Mais suaves */
-    --shadow-industrial: 0 4px 20px -4px hsl(200 80% 45% / 0.08);
+    /* CheckTag Shadows - Mais suaves */
+    --shadow-industrial: 0 4px 20px -4px hsl(218 80% 35% / 0.08);
     --shadow-success: 0 4px 20px -4px hsl(var(--success) / 0.15);
     --shadow-error: 0 4px 20px -4px hsl(var(--error) / 0.15);
-    --shadow-colormaq: 0 8px 24px -8px hsl(200 80% 45% / 0.12);
+    --shadow-checktag: 0 8px 24px -8px hsl(218 80% 35% / 0.12);
 
     --radius: 0.75rem;
 
-    --sidebar-background: 200 100% 39%; /* Colormaq blue sidebar */
+    --sidebar-background: 218 80% 35%; /* CheckTag blue sidebar */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 200 100% 30%;
+    --sidebar-primary: 218 80% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 100% 50%;
+    --sidebar-accent: 218 80% 45%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 200 50% 70%;
-    --sidebar-ring: 200 100% 60%;
+    --sidebar-border: 218 50% 60%;
+    --sidebar-ring: 218 80% 50%;
   }
 
   .dark {
@@ -87,10 +87,10 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    /* Colormaq Dark Mode Colors */
-    --primary: 200 100% 50%; /* Brighter blue for dark mode */
+    /* CheckTag Dark Mode Colors */
+    --primary: 218 80% 50%; /* Brighter blue for dark mode */
     --primary-foreground: 222.2 84% 4.9%;
-    --primary-glow: 200 100% 80%;
+    --primary-glow: 218 80% 80%;
 
     --secondary: 310 100% 60%; /* Brighter magenta for dark mode */
     --secondary-foreground: 222.2 84% 4.9%;
@@ -106,17 +106,17 @@ All colors MUST be HSL.
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 200 100% 50%; /* Colormaq blue for focus rings */
+    --ring: 218 80% 50%; /* CheckTag blue for focus rings */
     
     /* Dark Sidebar */
-    --sidebar-background: 200 100% 15%; /* Dark Colormaq blue */
+    --sidebar-background: 218 80% 15%; /* Dark CheckTag blue */
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 200 100% 50%;
+    --sidebar-primary: 218 80% 50%;
     --sidebar-primary-foreground: 222.2 84% 4.9%;
-    --sidebar-accent: 200 100% 25%;
+    --sidebar-accent: 218 80% 25%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 200 50% 30%;
-    --sidebar-ring: 200 100% 60%;
+    --sidebar-border: 218 50% 30%;
+    --sidebar-ring: 218 80% 60%;
   }
 }
 

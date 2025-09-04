@@ -4,7 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { CheckCircle, XCircle, ScanLine, RotateCcw, History, Settings } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
+import { usePWA } from '@/hooks/usePWA';
 import { AudioFeedback } from '@/utils/audioFeedback';
 import { ValidationState, ValidationResult, ValidationConfig } from '@/types/validation';
 import ConfigurationModal from '@/components/ConfigurationModal';
@@ -13,7 +16,6 @@ import RejectedModal from '@/components/RejectedModal';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import MobileOptimizations from '@/components/MobileOptimizations';
-import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -42,6 +44,10 @@ const ValidationSystem = () => {
   
   // Offline storage hook
   const offlineStorage = useOfflineStorage();
+  
+  // PWA hooks
+  const isMobile = useIsMobile();
+  const { isInstallable, isOnline, showInstallPrompt: showPWAPrompt } = usePWA();
   
   const hiddenInputRef = useRef<HTMLInputElement>(null);
 
@@ -305,10 +311,10 @@ const ValidationSystem = () => {
             />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Sistema de Validação de Etiquetas
+            Sistema de Checagem de Etiquetas
           </h1>
           <p className="text-base md:text-lg text-muted-foreground px-4">
-            Escaneie ou digite os dois códigos para validação
+            CheckTag v2.0 - Escaneie ou digite os dois códigos para checagem
           </p>
         </div>
 
@@ -513,9 +519,7 @@ const ValidationSystem = () => {
         </Card>
         
         {/* PWA Install Prompt */}
-        {showInstallPrompt && (
-          <PWAInstallPrompt onDismiss={() => setShowInstallPrompt(false)} />
-        )}
+        <PWAInstallPrompt />
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 {
-  "name": "Sistema de Validação de Etiquetas Colormaq",
-  "short_name": "LabelGuard",
-  "description": "Sistema industrial para validação de etiquetas com comparação automática de códigos de série",
+  "name": "Sistema de Checagem de Etiquetas CheckTag",
+  "short_name": "CheckTag",
+  "description": "Sistema industrial para checagem de etiquetas com comparação automática de códigos de série",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f1f7fd",
-  "theme_color": "#2563eb",
+  "theme_color": "#133fa2",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-BR",
@@ -41,9 +41,9 @@
   "prefer_related_applications": false,
   "shortcuts": [
     {
-      "name": "Nova Validação",
-      "short_name": "Validar",
-      "description": "Iniciar nova validação de etiquetas",
+      "name": "Nova Checagem",
+      "short_name": "Checar",
+      "description": "Iniciar nova checagem de etiquetas",
       "url": "/",
       "icons": [
         {
