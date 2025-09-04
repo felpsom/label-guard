@@ -1,4 +1,4 @@
-export type ValidationState = 'waiting' | 'approved' | 'rejected' | 'error';
+export type ValidationState = 'waiting' | 'approved' | 'rejected' | 'error' | 'blocked';
 
 export interface ValidationResult {
   serial1: string;

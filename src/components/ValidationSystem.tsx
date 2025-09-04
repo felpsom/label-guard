@@ -25,6 +25,7 @@ const ValidationSystem = () => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showRejectedModal, setShowRejectedModal] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
@@ -137,17 +138,26 @@ const ValidationSystem = () => {
     setValidationState('waiting');
     setMessage('Aguardando primeira leitura...');
     setShowRejectedModal(false);
+    setIsBlocked(false); // Desbloqueia o sistema
     AudioFeedback.stopAlarm(); // Garantir que o alarme pare
     hiddenInputRef.current?.focus();
   };
 
   // Handler para confirmação do modal de reprovado
   const handleRejectedConfirm = () => {
-    resetValidation();
+    setShowRejectedModal(false);
+    setIsBlocked(true); // Bloqueia o sistema após confirmação
+    setValidationState('blocked');
+    setMessage('Sistema bloqueado - Clique em LIMPAR para continuar');
   };
 
   // Handler para leitura automática
   const handleScanInput = (value: string) => {
+    // Se o sistema estiver bloqueado, não processa leituras
+    if (isBlocked) {
+      return;
+    }
+
     // Se ainda não há primeira leitura
     if (!isSerial1Complete) {
       const normalized = normalizeSerial(value);
@@ -175,7 +185,7 @@ const ValidationSystem = () => {
 
   // Handler para Enter key no input oculto
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && currentInput.trim()) {
+    if (e.key === 'Enter' && currentInput.trim() && !isBlocked) {
       handleScanInput(currentInput.trim());
     }
   };
@@ -254,6 +264,8 @@ const ValidationSystem = () => {
         return 'bg-gradient-error shadow-error border-error';
       case 'error':
         return 'bg-warning/10 shadow-lg border-warning';
+      case 'blocked':
+        return 'bg-red-500/20 shadow-lg border-red-500 animate-pulse';
       default:
         return 'bg-gradient-subtle shadow-industrial border-primary/20';
     }
@@ -268,6 +280,8 @@ const ValidationSystem = () => {
         return <XCircle className={`${iconClass} text-error-foreground`} />;
       case 'error':
         return <ScanLine className={`${iconClass} text-warning-foreground`} />;
+      case 'blocked':
+        return <XCircle className={`${iconClass} text-red-500`} />;
       default:
         return <ScanLine className={`${iconClass} text-primary animate-pulse`} />;
     }
@@ -334,6 +348,7 @@ const ValidationSystem = () => {
               validationState === 'approved' ? 'text-success-foreground' : 
               validationState === 'rejected' ? 'text-error-foreground' :
               validationState === 'error' ? 'text-warning-foreground' :
+              validationState === 'blocked' ? 'text-red-500' :
               'text-foreground'
             }`}>
               {message}
@@ -351,6 +366,7 @@ const ValidationSystem = () => {
           autoComplete="off"
           aria-hidden
           tabIndex={-1}
+          disabled={isBlocked}
         />
 
         {/* Display de códigos lidos */}
@@ -377,12 +393,13 @@ const ValidationSystem = () => {
           </Card>
 
           <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 ${
-            isSerial1Complete && !serial2 ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
-          }`}>
+            isSerial1Complete && !serial2 && !isBlocked ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
+          } ${isBlocked ? 'opacity-60' : ''}`}>
             <Label className="text-lg md:text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${isSerial1Complete && !serial2 ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${isSerial1Complete && !serial2 && !isBlocked ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
               Código 2
-              {isSerial1Complete && !serial2 && <span className="text-xs md:text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
+              {isSerial1Complete && !serial2 && !isBlocked && <span className="text-xs md:text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
+              {isBlocked && <span className="text-xs md:text-sm font-normal text-red-500 ml-2">(Bloqueado)</span>}
             </Label>
             <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
               serial2 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
