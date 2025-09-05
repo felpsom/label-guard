@@ -8,9 +8,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Colormaq Brand Design System - Tons Suaves */
-    --background: 200 20% 98%; /* Fundo com toque suave de azul */
-    --foreground: 215 25% 25%; /* Texto mais suave */
+    /* CheckTag Brand - Fundo azul escuro em todo o site */
+    --background: 218 80% 35%; /* #133fa2 */
+    --foreground: 0 0% 100%; /* Texto claro sobre fundo escuro */
 
     --card: 0 0% 100%;
     --card-foreground: 215 25% 25%;
