@@ -320,24 +320,24 @@ const ValidationSystem = () => {
 
         {/* Informações de Produção Atuais */}
         {(config.productionLine || config.productModel || config.voltage) && (
-          <Card className="p-4 bg-gradient-subtle shadow-industrial border-primary/10">
+          <Card className="p-4 bg-primary/80 shadow-industrial border-white/10">
             <div className="flex flex-wrap justify-center gap-6 text-sm">
               {config.productionLine && (
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Linha</div>
-                  <div className="font-mono font-semibold text-primary">{config.productionLine}</div>
+                  <div className="text-xs text-white/60">Linha</div>
+                  <div className="font-mono font-semibold text-white">{config.productionLine}</div>
                 </div>
               )}
               {config.productModel && (
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Modelo</div>
-                  <div className="font-mono font-semibold text-primary">{config.productModel}</div>
+                  <div className="text-xs text-white/60">Modelo</div>
+                  <div className="font-mono font-semibold text-white">{config.productModel}</div>
                 </div>
               )}
               {config.voltage && (
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Voltagem</div>
-                  <div className="font-mono font-semibold text-primary">{config.voltage}</div>
+                  <div className="text-xs text-white/60">Voltagem</div>
+                  <div className="font-mono font-semibold text-white">{config.voltage}</div>
                 </div>
               )}
             </div>
@@ -345,17 +345,17 @@ const ValidationSystem = () => {
         )}
 
         {/* Status Card */}
-        <Card className={`p-4 md:p-6 transition-all duration-500 shadow-colormaq ${getStateClasses()}`}>
+        <Card className={`p-4 md:p-6 transition-all duration-500 shadow-colormaq bg-primary/80 border-white/10 ${getStateClasses()}`}>
           <div className="flex flex-col items-center space-y-3 md:space-y-4">
             <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
               {getIcon()}
             </div>
             <h2 className={`text-xl md:text-2xl font-bold text-center px-2 ${
-              validationState === 'approved' ? 'text-success-foreground' : 
-              validationState === 'rejected' ? 'text-error-foreground' :
-              validationState === 'error' ? 'text-warning-foreground' :
-              validationState === 'blocked' ? 'text-red-500' :
-              'text-foreground'
+              validationState === 'approved' ? 'text-green-400' : 
+              validationState === 'rejected' ? 'text-red-400' :
+              validationState === 'error' ? 'text-yellow-400' :
+              validationState === 'blocked' ? 'text-red-400' :
+              'text-white'
             }`}>
               {message}
             </h2>
@@ -377,38 +377,38 @@ const ValidationSystem = () => {
 
         {/* Display de códigos lidos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 ${
-            !isSerial1Complete ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
+          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 bg-primary/80 border-white/10 ${
+            !isSerial1Complete ? 'ring-2 ring-white/40 shadow-lg' : ''
           }`}>
-            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${!isSerial1Complete ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2 text-white">
+              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${!isSerial1Complete ? 'text-white animate-pulse' : 'text-white/60'}`} />
               Código 1
-              {!isSerial1Complete && <span className="text-xs md:text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
+              {!isSerial1Complete && <span className="text-xs md:text-sm font-normal text-white/80 ml-2">(Aguardando...)</span>}
             </Label>
             <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
-              serial1 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
+              serial1 ? 'border-green-400 bg-green-400/10 text-green-400' : 'border-white/30 text-white/60'
             }`}>
               {serial1 || 'Nenhum código lido'}
             </div>
             {isSerial1Complete && (
-              <div className="flex items-center justify-center text-success">
+              <div className="flex items-center justify-center text-green-400">
                 <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                 <span className="font-medium text-sm md:text-base">Código 1 registrado</span>
               </div>
             )}
           </Card>
 
-          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 ${
-            isSerial1Complete && !serial2 && !isBlocked ? 'ring-2 ring-primary shadow-lg' : 'bg-muted/30'
+          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 bg-primary/80 border-white/10 ${
+            isSerial1Complete && !serial2 && !isBlocked ? 'ring-2 ring-white/40 shadow-lg' : ''
           } ${isBlocked ? 'opacity-60' : ''}`}>
-            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2">
-              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${isSerial1Complete && !serial2 && !isBlocked ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2 text-white">
+              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${isSerial1Complete && !serial2 && !isBlocked ? 'text-white animate-pulse' : 'text-white/60'}`} />
               Código 2
-              {isSerial1Complete && !serial2 && !isBlocked && <span className="text-xs md:text-sm font-normal text-primary ml-2">(Aguardando...)</span>}
-              {isBlocked && <span className="text-xs md:text-sm font-normal text-red-500 ml-2">(Bloqueado)</span>}
+              {isSerial1Complete && !serial2 && !isBlocked && <span className="text-xs md:text-sm font-normal text-white/80 ml-2">(Aguardando...)</span>}
+              {isBlocked && <span className="text-xs md:text-sm font-normal text-red-400 ml-2">(Bloqueado)</span>}
             </Label>
             <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
-              serial2 ? 'border-success bg-success/10 text-success' : 'border-muted-foreground/30 text-muted-foreground'
+              serial2 ? 'border-green-400 bg-green-400/10 text-green-400' : 'border-white/30 text-white/60'
             }`}>
               {serial2 || 'Nenhum código lido'}
             </div>
@@ -421,7 +421,7 @@ const ValidationSystem = () => {
             onClick={resetValidation}
             size="default"
             variant="outline"
-            className="px-4 py-2 md:px-6 text-sm md:text-base"
+            className="px-4 py-2 md:px-6 text-sm md:text-base bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             <RotateCcw className="w-4 h-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Limpar (F9)</span>
@@ -432,7 +432,7 @@ const ValidationSystem = () => {
             onClick={() => setShowHistoryModal(true)}
             size="default"
             variant="outline"
-            className="px-4 py-2 md:px-6 text-sm md:text-base"
+            className="px-4 py-2 md:px-6 text-sm md:text-base bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             <History className="w-4 h-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Histórico (F6)</span>
@@ -443,7 +443,7 @@ const ValidationSystem = () => {
             onClick={() => setShowConfigModal(true)}
             size="default"
             variant="outline"
-            className="px-4 py-2 md:px-6 text-sm md:text-base"
+            className="px-4 py-2 md:px-6 text-sm md:text-base bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             <Settings className="w-4 h-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Config</span>
@@ -477,43 +477,43 @@ const ValidationSystem = () => {
 
         {/* Stats */}
         {validationHistory.length > 0 && (
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4 text-center">Estatísticas da Sessão</h3>
+          <Card className="p-6 bg-primary/80 border-white/10">
+            <h3 className="text-xl font-semibold mb-4 text-center text-white">Estatísticas da Sessão</h3>
             <div className="grid md:grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-primary">{validationHistory.length}</div>
-                <div className="text-sm text-muted-foreground">Total de Validações</div>
+                <div className="text-2xl font-bold text-white">{validationHistory.length}</div>
+                <div className="text-sm text-white/60">Total de Validações</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-success">
+                <div className="text-2xl font-bold text-green-400">
                   {validationHistory.filter(v => v.state === 'approved').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Aprovados</div>
+                <div className="text-sm text-white/60">Aprovados</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-error">
+                <div className="text-2xl font-bold text-red-400">
                   {validationHistory.filter(v => v.state === 'rejected').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Reprovados</div>
+                <div className="text-sm text-white/60">Reprovados</div>
               </div>
             </div>
           </Card>
         )}
 
         {/* Quick Info */}
-        <Card className="p-6 bg-muted/50">
+        <Card className="p-6 bg-primary/80 border-white/10">
           <div className="grid md:grid-cols-3 gap-4 text-center">
             <div>
-              <h3 className="font-semibold text-success">APROVADO</h3>
-              <p className="text-sm text-muted-foreground">Códigos idênticos</p>
+              <h3 className="font-semibold text-green-400">APROVADO</h3>
+              <p className="text-sm text-white/60">Códigos idênticos</p>
             </div>
             <div>
-              <h3 className="font-semibold text-error">REPROVADO</h3>
-              <p className="text-sm text-muted-foreground">Códigos diferentes</p>
+              <h3 className="font-semibold text-red-400">REPROVADO</h3>
+              <p className="text-sm text-white/60">Códigos diferentes</p>
             </div>
             <div>
-              <h3 className="font-semibold text-warning">ERRO</h3>
-              <p className="text-sm text-muted-foreground">Formato inválido</p>
+              <h3 className="font-semibold text-yellow-400">ERRO</h3>
+              <p className="text-sm text-white/60">Formato inválido</p>
             </div>
           </div>
         </Card>
