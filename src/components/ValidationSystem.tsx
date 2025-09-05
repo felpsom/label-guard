@@ -302,14 +302,6 @@ const ValidationSystem = () => {
         <OfflineIndicator />
         {/* Header */}
         <div className="text-center space-y-2 md:space-y-4 mb-6 md:mb-8">
-          {/* Colormaq Logo */}
-          <div className="flex justify-center items-center mb-2 md:mb-4">
-            <img 
-              src="/src/assets/colormaq-logo.svg" 
-              alt="Colormaq Logo" 
-              className="h-12 md:h-16 w-auto filter brightness-0 invert"
-            />
-          </div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">
             Sistema de Checagem de Etiquetas
           </h1>
