@@ -294,9 +294,9 @@ const ValidationSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle p-4 pb-20 mobile-optimized">
+    <div className="min-h-screen bg-primary p-4 pb-20 mobile-optimized flex flex-col">
       <MobileOptimizations />
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto w-full space-y-6 flex-1 flex flex-col justify-center">
         
         {/* Offline Indicator */}
         <OfflineIndicator />
@@ -307,13 +307,13 @@ const ValidationSystem = () => {
             <img 
               src="/src/assets/colormaq-logo.svg" 
               alt="Colormaq Logo" 
-              className="h-12 md:h-16 w-auto filter brightness-0 invert dark:brightness-100 dark:invert-0"
+              className="h-12 md:h-16 w-auto filter brightness-0 invert"
             />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">
             Sistema de Checagem de Etiquetas
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground px-4">
+          <p className="text-base md:text-lg text-white/80 px-4">
             CheckTag v2.0 - Escaneie ou digite os dois códigos para checagem
           </p>
         </div>
