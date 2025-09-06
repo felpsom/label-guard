@@ -32,7 +32,7 @@ export const useOfflineStorage = (): OfflineStorage => {
   // Função para abrir o banco de dados
   const openDB = (): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open('LabelGuardDB', 1);
+      const request = indexedDB.open('CheckTagDB', 1);
 
       request.onerror = () => {
         reject(new Error('Erro ao abrir banco de dados IndexedDB'));
@@ -64,7 +64,7 @@ export const useOfflineStorage = (): OfflineStorage => {
   // Salvar histórico de validações
   const saveValidationHistory = async (history: ValidationResult[]): Promise<void> => {
     if (!isSupported) {
-      localStorage.setItem('labelguard-history', JSON.stringify(history));
+      localStorage.setItem('checktag-history', JSON.stringify(history));
       return;
     }
 
@@ -96,20 +96,25 @@ export const useOfflineStorage = (): OfflineStorage => {
     } catch (error) {
       console.error('Erro ao salvar histórico:', error);
       // Fallback para localStorage
-      localStorage.setItem('labelguard-history', JSON.stringify(history));
+      localStorage.setItem('checktag-history', JSON.stringify(history));
     }
   };
 
   // Carregar histórico de validações
   const loadValidationHistory = async (): Promise<ValidationResult[]> => {
     if (!isSupported) {
-      const stored = localStorage.getItem('labelguard-history');
+      const stored = localStorage.getItem('checktag-history');
       if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.map((item: any) => ({
-          ...item,
-          timestamp: new Date(item.timestamp)
-        }));
+        try {
+          const parsed = JSON.parse(stored);
+          return parsed.map((item: any) => ({
+            ...item,
+            timestamp: item.timestamp ? new Date(item.timestamp) : new Date()
+          }));
+        } catch (error) {
+          console.error('Erro ao parsear histórico localStorage:', error);
+          return [];
+        }
       }
       return [];
     }
@@ -133,13 +138,18 @@ export const useOfflineStorage = (): OfflineStorage => {
     } catch (error) {
       console.error('Erro ao carregar histórico:', error);
       // Fallback para localStorage
-      const stored = localStorage.getItem('labelguard-history');
+      const stored = localStorage.getItem('checktag-history');
       if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.map((item: any) => ({
-          ...item,
-          timestamp: new Date(item.timestamp)
-        }));
+        try {
+          const parsed = JSON.parse(stored);
+          return parsed.map((item: any) => ({
+            ...item,
+            timestamp: item.timestamp ? new Date(item.timestamp) : new Date()
+          }));
+        } catch (parseError) {
+          console.error('Erro ao parsear histórico:', parseError);
+          return [];
+        }
       }
       return [];
     }
@@ -148,7 +158,7 @@ export const useOfflineStorage = (): OfflineStorage => {
   // Salvar configurações
   const saveConfig = async (config: ValidationConfig): Promise<void> => {
     if (!isSupported) {
-      localStorage.setItem('labelguard-config', JSON.stringify(config));
+      localStorage.setItem('checktag-config', JSON.stringify(config));
       return;
     }
 
@@ -166,14 +176,14 @@ export const useOfflineStorage = (): OfflineStorage => {
       db.close();
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
-      localStorage.setItem('labelguard-config', JSON.stringify(config));
+      localStorage.setItem('checktag-config', JSON.stringify(config));
     }
   };
 
   // Carregar configurações
   const loadConfig = async (): Promise<ValidationConfig | null> => {
     if (!isSupported) {
-      const stored = localStorage.getItem('labelguard-config');
+      const stored = localStorage.getItem('checktag-config');
       return stored ? JSON.parse(stored) : DEFAULT_CONFIG;
     }
 
@@ -197,7 +207,7 @@ export const useOfflineStorage = (): OfflineStorage => {
       });
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
-      const stored = localStorage.getItem('labelguard-config');
+      const stored = localStorage.getItem('checktag-config');
       return stored ? JSON.parse(stored) : DEFAULT_CONFIG;
     }
   };
@@ -205,8 +215,8 @@ export const useOfflineStorage = (): OfflineStorage => {
   // Limpar todos os dados
   const clearAllData = async (): Promise<void> => {
     if (!isSupported) {
-      localStorage.removeItem('labelguard-history');
-      localStorage.removeItem('labelguard-config');
+      localStorage.removeItem('checktag-history');
+      localStorage.removeItem('checktag-config');
       return;
     }
 
@@ -230,8 +240,8 @@ export const useOfflineStorage = (): OfflineStorage => {
       db.close();
     } catch (error) {
       console.error('Erro ao limpar dados:', error);
-      localStorage.removeItem('labelguard-history');
-      localStorage.removeItem('labelguard-config');
+      localStorage.removeItem('checktag-history');
+      localStorage.removeItem('checktag-config');
     }
   };
 

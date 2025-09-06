@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { CheckCircle, XCircle, ScanLine, RotateCcw, History, Settings } from 'lucide-react';
+import { RotateCcw, History, Settings } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
@@ -16,6 +16,9 @@ import RejectedModal from '@/components/RejectedModal';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import MobileOptimizations from '@/components/MobileOptimizations';
+import ValidationDisplay from '@/components/ValidationDisplay';
+import ValidationStatusCard from '@/components/ValidationStatusCard';
+import ValidationStats from '@/components/ValidationStats';
 
 const ValidationSystem = () => {
   const [serial1, setSerial1] = useState('');
@@ -210,10 +213,12 @@ const ValidationSystem = () => {
         const savedHistory = await offlineStorage.loadValidationHistory();
         setValidationHistory(savedHistory);
         
-        // Mostrar prompt de instalação PWA após 2 segundos se não estiver instalado
+        // Mostrar prompt de instalação PWA após 5 segundos se instalável
         setTimeout(() => {
-          setShowInstallPrompt(true);
-        }, 2000);
+          if (isInstallable) {
+            setShowInstallPrompt(true);
+          }
+        }, 5000);
       } catch (error) {
         console.error('Erro ao carregar dados salvos:', error);
       }
@@ -229,24 +234,41 @@ const ValidationSystem = () => {
 
   // Foco automático no input oculto ao carregar e manter sempre focado
   useEffect(() => {
-    // Focus once on load, but do NOT steal focus from outside the iframe (Lovable chat)
-    hiddenInputRef.current?.focus();
+    // Focus inicial apenas se não estivermos no modo de desenvolvimento do Lovable
+    if (document.visibilityState === 'visible' && document.hasFocus()) {
+      setTimeout(() => {
+        hiddenInputRef.current?.focus();
+      }, 100);
+    }
 
     const handleFocus = () => {
-      // Only manage focus if this document is active and visible
+      // Gerenciar foco apenas se o documento estiver ativo e visível
       if (!document.hasFocus() || document.visibilityState !== 'visible') return;
+      
+      // Não roubar foco se estiver dentro de um iframe (modo Lovable)
+      if (window !== window.parent) return;
 
       const active = document.activeElement as HTMLElement | null;
-      const isInteractive = !!active && (active.isContentEditable || ['INPUT','TEXTAREA','SELECT','BUTTON'].includes(active.tagName));
+      const isModalOpen = showConfigModal || showHistoryModal || showRejectedModal;
+      
+      // Não gerenciar foco se um modal estiver aberto
+      if (isModalOpen) return;
+      
+      const isInteractive = !!active && (
+        active.isContentEditable || 
+        ['INPUT','TEXTAREA','SELECT','BUTTON'].includes(active.tagName) ||
+        active.closest('[role="dialog"]') ||
+        active.closest('.radix-dialog-content')
+      );
 
-      if (hiddenInputRef.current && (!isInteractive || active === hiddenInputRef.current)) {
-        if (active !== hiddenInputRef.current) hiddenInputRef.current.focus();
+      if (hiddenInputRef.current && !isInteractive && active !== hiddenInputRef.current) {
+        hiddenInputRef.current.focus();
       }
     };
 
-    const interval = setInterval(handleFocus, 300);
+    const interval = setInterval(handleFocus, 500);
     return () => clearInterval(interval);
-  }, []);
+  }, [showConfigModal, showHistoryModal, showRejectedModal]);
 
   // Clear history function
   const clearHistory = () => {
@@ -260,38 +282,6 @@ const ValidationSystem = () => {
     onHistory: () => setShowHistoryModal(true),
     onConfig: () => setShowConfigModal(true)
   });
-
-  // Classes para estados visuais
-  const getStateClasses = () => {
-    switch (validationState) {
-      case 'approved':
-        return 'bg-gradient-success shadow-success border-success';
-      case 'rejected':
-        return 'bg-gradient-error shadow-error border-error';
-      case 'error':
-        return 'bg-warning/10 shadow-lg border-warning';
-      case 'blocked':
-        return 'bg-red-500/20 shadow-lg border-red-500 animate-pulse';
-      default:
-        return 'bg-gradient-subtle shadow-industrial border-primary/20';
-    }
-  };
-
-  const getIcon = () => {
-    const iconClass = "w-full h-full";
-    switch (validationState) {
-      case 'approved':
-        return <CheckCircle className={`${iconClass} text-success-foreground`} />;
-      case 'rejected':
-        return <XCircle className={`${iconClass} text-error-foreground`} />;
-      case 'error':
-        return <ScanLine className={`${iconClass} text-warning-foreground`} />;
-      case 'blocked':
-        return <XCircle className={`${iconClass} text-red-500`} />;
-      default:
-        return <ScanLine className={`${iconClass} text-primary animate-pulse`} />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-primary p-4 pb-20 mobile-optimized flex flex-col">
@@ -337,22 +327,10 @@ const ValidationSystem = () => {
         )}
 
         {/* Status Card */}
-        <Card className={`p-4 md:p-6 transition-all duration-500 shadow-colormaq bg-primary/80 border-white/10 ${getStateClasses()}`}>
-          <div className="flex flex-col items-center space-y-3 md:space-y-4">
-            <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
-              {getIcon()}
-            </div>
-            <h2 className={`text-xl md:text-2xl font-bold text-center px-2 ${
-              validationState === 'approved' ? 'text-green-400' : 
-              validationState === 'rejected' ? 'text-red-400' :
-              validationState === 'error' ? 'text-yellow-400' :
-              validationState === 'blocked' ? 'text-red-400' :
-              'text-white'
-            }`}>
-              {message}
-            </h2>
-          </div>
-        </Card>
+        <ValidationStatusCard 
+          validationState={validationState}
+          message={message}
+        />
 
         {/* Input oculto para capturar leituras */}
         <Input
@@ -368,44 +346,13 @@ const ValidationSystem = () => {
         />
 
         {/* Display de códigos lidos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 bg-primary/80 border-white/10 ${
-            !isSerial1Complete ? 'ring-2 ring-white/40 shadow-lg' : ''
-          }`}>
-            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2 text-white">
-              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${!isSerial1Complete ? 'text-white animate-pulse' : 'text-white/60'}`} />
-              Código 1
-              {!isSerial1Complete && <span className="text-xs md:text-sm font-normal text-white/80 ml-2">(Aguardando...)</span>}
-            </Label>
-            <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
-              serial1 ? 'border-green-400 bg-green-400/10 text-green-400' : 'border-white/30 text-white/60'
-            }`}>
-              {serial1 || 'Nenhum código lido'}
-            </div>
-            {isSerial1Complete && (
-              <div className="flex items-center justify-center text-green-400">
-                <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                <span className="font-medium text-sm md:text-base">Código 1 registrado</span>
-              </div>
-            )}
-          </Card>
-
-          <Card className={`p-4 md:p-6 space-y-4 transition-all duration-300 bg-primary/80 border-white/10 ${
-            isSerial1Complete && !serial2 && !isBlocked ? 'ring-2 ring-white/40 shadow-lg' : ''
-          } ${isBlocked ? 'opacity-60' : ''}`}>
-            <Label className="text-lg md:text-xl font-semibold flex items-center gap-2 text-white">
-              <ScanLine className={`w-4 h-4 md:w-5 md:h-5 ${isSerial1Complete && !serial2 && !isBlocked ? 'text-white animate-pulse' : 'text-white/60'}`} />
-              Código 2
-              {isSerial1Complete && !serial2 && !isBlocked && <span className="text-xs md:text-sm font-normal text-white/80 ml-2">(Aguardando...)</span>}
-              {isBlocked && <span className="text-xs md:text-sm font-normal text-red-400 ml-2">(Bloqueado)</span>}
-            </Label>
-            <div className={`text-lg md:text-xl p-3 md:p-4 text-center font-mono tracking-wider border-2 border-dashed rounded-lg min-h-[50px] md:min-h-[60px] flex items-center justify-center break-all ${
-              serial2 ? 'border-green-400 bg-green-400/10 text-green-400' : 'border-white/30 text-white/60'
-            }`}>
-              {serial2 || 'Nenhum código lido'}
-            </div>
-          </Card>
-        </div>
+        <ValidationDisplay
+          serial1={serial1}
+          serial2={serial2}
+          isSerial1Complete={isSerial1Complete}
+          isBlocked={isBlocked}
+          validationState={validationState}
+        />
 
         {/* Controls */}
         <div className="flex justify-center flex-wrap gap-2 md:gap-3">
@@ -467,51 +414,13 @@ const ValidationSystem = () => {
           serial2={serial2}
         />
 
-        {/* Stats */}
-        {validationHistory.length > 0 && (
-          <Card className="p-6 bg-primary/80 border-white/10">
-            <h3 className="text-xl font-semibold mb-4 text-center text-white">Estatísticas da Sessão</h3>
-            <div className="grid md:grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-white">{validationHistory.length}</div>
-                <div className="text-sm text-white/60">Total de Validações</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-400">
-                  {validationHistory.filter(v => v.state === 'approved').length}
-                </div>
-                <div className="text-sm text-white/60">Aprovados</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-400">
-                  {validationHistory.filter(v => v.state === 'rejected').length}
-                </div>
-                <div className="text-sm text-white/60">Reprovados</div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Quick Info */}
-        <Card className="p-6 bg-primary/80 border-white/10">
-          <div className="grid md:grid-cols-3 gap-4 text-center">
-            <div>
-              <h3 className="font-semibold text-green-400">APROVADO</h3>
-              <p className="text-sm text-white/60">Códigos idênticos</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-red-400">REPROVADO</h3>
-              <p className="text-sm text-white/60">Códigos diferentes</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-yellow-400">ERRO</h3>
-              <p className="text-sm text-white/60">Formato inválido</p>
-            </div>
-          </div>
-        </Card>
+        {/* Stats and Quick Info */}
+        <ValidationStats validationHistory={validationHistory} />
         
         {/* PWA Install Prompt */}
-        <PWAInstallPrompt />
+        {showInstallPrompt && isInstallable && (
+          <PWAInstallPrompt onDismiss={() => setShowInstallPrompt(false)} />
+        )}
       </div>
     </div>
   );

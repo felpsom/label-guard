@@ -84,7 +84,7 @@ export default {
 				'gradient-success': 'var(--gradient-success)',
 				'gradient-error': 'var(--gradient-error)',
 				'gradient-subtle': 'var(--gradient-subtle)',
-				'gradient-colormaq': 'var(--gradient-colormaq)'
+				'gradient-checktag': 'var(--gradient-checktag)'
 			},
 			boxShadow: {
 				'industrial': 'var(--shadow-industrial)',

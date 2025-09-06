@@ -117,7 +117,10 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
                       <TableCell className="text-xs">{validation.productModel || '-'}</TableCell>
                       <TableCell className="text-xs">{validation.voltage || '-'}</TableCell>
                       <TableCell className="text-xs">
-                        {validation.timestamp.toLocaleString('pt-BR')}
+                        {validation.timestamp instanceof Date ? 
+                          validation.timestamp.toLocaleString('pt-BR') : 
+                          new Date(validation.timestamp).toLocaleString('pt-BR')
+                        }
                       </TableCell>
                     </TableRow>
                   ))
