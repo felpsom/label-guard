@@ -133,11 +133,6 @@ All colors MUST be HSL.
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
-    overflow: hidden; /* Remove scrollbars globally */
-  }
-
-  html, body, #root {
-    height: 100%;
   }
   
   /* Mobile optimizations */
