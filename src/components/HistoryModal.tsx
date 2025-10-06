@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +58,9 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
             <History className="w-5 h-5" />
             Histórico de Validações
           </DialogTitle>
+          <DialogDescription>
+            Visualize todas as validações realizadas no sistema
+          </DialogDescription>
         </DialogHeader>
         
         <div className="flex-1 overflow-hidden flex flex-col space-y-4">
