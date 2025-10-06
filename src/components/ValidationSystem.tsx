@@ -284,7 +284,7 @@ const ValidationSystem = () => {
   });
 
   return (
-    <div className="min-h-screen bg-primary p-4 pb-20 mobile-optimized flex flex-col">
+    <div className="min-h-screen bg-primary p-4 mobile-optimized flex flex-col overflow-hidden">
       <MobileOptimizations />
       <div className="max-w-4xl mx-auto w-full space-y-6 flex-1 flex flex-col justify-center">
         
