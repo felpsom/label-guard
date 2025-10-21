@@ -157,6 +157,16 @@ const ValidationSystem = () => {
     hiddenInputRef.current?.focus();
   };
 
+  // Verifica no histórico se um código já foi apontado anteriormente
+  const hasAlreadyBeenPointed = (normalizedCode: string): boolean => {
+    if (!normalizedCode) return false;
+    return validationHistory.some((r) => {
+      const s1 = r.serial1 ? normalizeSerial(r.serial1) : "";
+      const s2 = r.serial2 ? normalizeSerial(r.serial2) : "";
+      return s1 === normalizedCode || s2 === normalizedCode;
+    });
+  };
+
   // Handler para confirmação do modal de reprovado
   const handleRejectedConfirm = () => {
     setShowRejectedModal(false);
@@ -206,6 +216,15 @@ const ValidationSystem = () => {
     // Se ainda não há primeira leitura
     if (!isSerial1Complete) {
       if (validateFormat(normalized)) {
+        // Bloqueia códigos já apontados anteriormente
+        if (hasAlreadyBeenPointed(normalized)) {
+          setValidationState('error');
+          setMessage('Código já apontado anteriormente');
+          if (config.soundEnabled) AudioFeedback.playWarning();
+          setCurrentInput('');
+          return;
+        }
+        
         setSerial1(value);
         setIsSerial1Complete(true);
         setMessage('Aguardando segunda leitura...');
@@ -221,6 +240,16 @@ const ValidationSystem = () => {
       }
     } else {
       // Segunda leitura
+      // Bloqueia códigos já apontados anteriormente
+      const normalizedSecond = normalizeSerial(value);
+      if (hasAlreadyBeenPointed(normalizedSecond)) {
+        setValidationState('error');
+        setMessage('Código já apontado anteriormente');
+        if (config.soundEnabled) AudioFeedback.playWarning();
+        setCurrentInput('');
+        return;
+      }
+      
       setSerial2(value);
       compareSerials(serial1, value);
       setCurrentInput('');
