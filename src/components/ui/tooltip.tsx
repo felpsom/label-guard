@@ -1,28 +1,46 @@
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
-import { cn } from "@/lib/utils"
+// Lightweight, safe tooltip stubs to avoid Radix dependency while fixing invalid hook calls
+// These components render children directly without portals or React hook usage
+// If you need full tooltips later, re-enable Radix here after resolving React duplication issues.
 
-const TooltipProvider = TooltipPrimitive.Provider
+type ProviderProps = { children?: React.ReactNode }
 
-const Tooltip = TooltipPrimitive.Root
+const TooltipProvider: React.FC<ProviderProps> = ({ children }) => <>{children}</>
 
-const TooltipTrigger = TooltipPrimitive.Trigger
+const Tooltip: React.FC<ProviderProps> = ({ children }) => <>{children}</>
+
+const TooltipTrigger = React.forwardRef<
+  HTMLElement,
+  React.HTMLAttributes<HTMLElement> & { asChild?: boolean }
+>(({ asChild, children, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement, { ref, ...props })
+  }
+  return (
+    <span ref={ref as React.RefObject<HTMLSpanElement>} {...props}>
+      {children}
+    </span>
+  )
+})
+TooltipTrigger.displayName = "TooltipTrigger"
 
 const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Content
-    ref={ref}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    )}
-    {...props}
-  />
-))
-TooltipContent.displayName = TooltipPrimitive.Content.displayName
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { hidden?: boolean }
+>(({ hidden, children, className = "", ...props }, ref) => {
+  if (hidden) return null
+  return (
+    <div
+      ref={ref}
+      role="tooltip"
+      className={`z-[60] rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+})
+TooltipContent.displayName = "TooltipContent"
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
