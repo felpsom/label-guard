@@ -34,6 +34,10 @@ const ValidationSystem = () => {
   const [currentInput, setCurrentInput] = useState('');
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
+  // Sistema de deduplicação para evitar leituras repetidas
+  const recentScansRef = useRef<Map<string, number>>(new Map());
+  const DEDUPE_WINDOW = 2000; // 2 segundos para considerar duplicata
+  
   // Configuration state
   const [config, setConfig] = useState<ValidationConfig>({
     autoResetTime: 3,
@@ -149,6 +153,7 @@ const ValidationSystem = () => {
     setShowRejectedModal(false);
     setIsBlocked(false); // Desbloqueia o sistema
     AudioFeedback.stopAlarm(); // Garantir que o alarme pare
+    recentScansRef.current.clear(); // Limpa o cache de deduplicação
     hiddenInputRef.current?.focus();
   };
 
@@ -160,16 +165,46 @@ const ValidationSystem = () => {
     setMessage('Sistema bloqueado - Clique em LIMPAR para continuar');
   };
 
+  // Verifica se o código já foi lido recentemente (deduplicação)
+  const isDuplicateScan = (normalizedCode: string): boolean => {
+    const now = Date.now();
+    const lastScanTime = recentScansRef.current.get(normalizedCode);
+    
+    // Limpar códigos antigos do cache (mais de 5 segundos)
+    recentScansRef.current.forEach((timestamp, code) => {
+      if (now - timestamp > 5000) {
+        recentScansRef.current.delete(code);
+      }
+    });
+    
+    // Verifica se foi lido nos últimos 2 segundos
+    if (lastScanTime && (now - lastScanTime) < DEDUPE_WINDOW) {
+      return true;
+    }
+    
+    // Registra esta leitura
+    recentScansRef.current.set(normalizedCode, now);
+    return false;
+  };
+
   // Handler para leitura automática
   const handleScanInput = (value: string) => {
     // Se o sistema estiver bloqueado, não processa leituras
     if (isBlocked) {
       return;
     }
+    
+    const normalized = normalizeSerial(value);
+    
+    // Verifica se é uma leitura duplicada
+    if (isDuplicateScan(normalized)) {
+      console.log('Leitura duplicada ignorada:', normalized);
+      setCurrentInput('');
+      return;
+    }
 
     // Se ainda não há primeira leitura
     if (!isSerial1Complete) {
-      const normalized = normalizeSerial(value);
       if (validateFormat(normalized)) {
         setSerial1(value);
         setIsSerial1Complete(true);
